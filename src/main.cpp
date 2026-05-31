@@ -28,6 +28,7 @@ const char DASHBOARD_HTML[] PROGMEM = R"rawhtml(
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Aquatlantis | Smart Aquarium</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
             --bg-base: #0b0f19;
@@ -561,6 +562,65 @@ const char DASHBOARD_HTML[] PROGMEM = R"rawhtml(
             box-shadow: 0 0 8px var(--accent-primary-glow);
             border-color: var(--accent-primary);
         }
+
+        /* Modal Configurare WiFi */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(11, 15, 25, 0.8);
+            backdrop-filter: blur(8px);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            padding: 16px;
+        }
+        .modal.show {
+            display: flex;
+        }
+        .modal-content {
+            background: linear-gradient(135deg, var(--bg-surface), var(--bg-card));
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            padding: 24px;
+            max-width: 400px;
+            width: 100%;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            position: relative;
+            animation: modalEnter 0.25s ease-out;
+        }
+        @keyframes modalEnter {
+            from { transform: scale(0.95); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+            margin-bottom: 4px;
+        }
+        .modal-header h2 {
+            font-size: 18px;
+            font-weight: 800;
+            background: linear-gradient(to right, #38bdf8, #818cf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .close-btn {
+            font-size: 24px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: color 0.2s;
+            line-height: 1;
+        }
+        .close-btn:hover {
+            color: var(--state-danger);
+        }
         
         footer {
             text-align: center;
@@ -617,6 +677,10 @@ const char DASHBOARD_HTML[] PROGMEM = R"rawhtml(
                         <div class="stat-block">
                             <span class="stat-label">Adresă IP</span>
                             <span class="stat-val" id="ip-val">192.168.1.32</span>
+                        </div>
+                        <div class="stat-block">
+                            <span class="stat-label">Senzor Lumină</span>
+                            <span class="stat-val" id="light-val">0%</span>
                         </div>
                     </div>
                 </div>
@@ -699,6 +763,14 @@ const char DASHBOARD_HTML[] PROGMEM = R"rawhtml(
                         </div>
                     </div>
                 </div>
+
+                <!-- Grafic Telemetrie Luminozitate -->
+                <div class="card" style="margin-top: 12px;">
+                    <div class="card-title">Istoric Luminozitate (24 Ore)</div>
+                    <div style="position: relative; height: 220px; width: 100%;">
+                        <canvas id="telemetryChart"></canvas>
+                    </div>
+                </div>
             </div>
 
             <!-- Right Column (Narrower): Control Periferice, WiFi Config -->
@@ -712,20 +784,13 @@ const char DASHBOARD_HTML[] PROGMEM = R"rawhtml(
                     <button class="btn btn-secondary btn-sm" onclick="clearOverrides()" style="margin-top: 8px;">Revenire la Auto (Toate)</button>
                 </div>
 
-                <!-- WiFi Config -->
+                <!-- Administrare Sistem -->
                 <div class="card">
-                    <div class="card-title">Configurare WiFi</div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="wifi-ssid">SSID Rețea</label>
-                            <input type="text" id="wifi-ssid" placeholder="Nume rețea locală">
-                        </div>
-                        <div class="form-group">
-                            <label for="wifi-pass">Parolă</label>
-                            <input type="password" id="wifi-pass" placeholder="••••••••">
-                        </div>
+                    <div class="card-title">Administrare Sistem</div>
+                    <div style="display: flex; flex-direction: column; gap: 12px;">
+                        <button class="btn btn-secondary" onclick="openWifiModal()">Configurare WiFi</button>
+                        <button class="btn" onclick="window.open('/update', '_blank')">Update Firmware</button>
                     </div>
-                    <button class="btn" onclick="saveWifi()">Conectează Dispozitivul</button>
                 </div>
             </div>
         </div>
@@ -735,6 +800,25 @@ const char DASHBOARD_HTML[] PROGMEM = R"rawhtml(
             <div class="card-title">Istoric Evenimente (Timeline)</div>
             <div class="timeline-container" id="timeline-container">
                 <p style="font-size: 13px; color: var(--text-secondary)">Se încarcă istoricul...</p>
+            </div>
+        </div>
+
+        <!-- Modal pentru Configurare WiFi -->
+        <div id="wifi-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Configurare WiFi</h2>
+                    <span class="close-btn" onclick="closeWifiModal()">&times;</span>
+                </div>
+                <div class="form-group">
+                    <label for="wifi-ssid">SSID Rețea</label>
+                    <input type="text" id="wifi-ssid" placeholder="Nume rețea locală">
+                </div>
+                <div class="form-group">
+                    <label for="wifi-pass">Parolă</label>
+                    <input type="password" id="wifi-pass" placeholder="••••••••">
+                </div>
+                <button class="btn" style="margin-top: 8px;" onclick="saveWifiAndClose()">Conectează Dispozitivul</button>
             </div>
         </div>
         
@@ -863,6 +947,7 @@ const char DASHBOARD_HTML[] PROGMEM = R"rawhtml(
                 document.getElementById('ssid-val').innerText = data.wifi_ssid;
                 document.getElementById('rssi-val').innerText = data.wifi_rssi + ' dBm';
                 document.getElementById('ip-val').innerText = data.ip;
+                document.getElementById('light-val').innerText = data.light_percent + '%';
                 
                 // Update Digital Inputs
                 const updateInputDot = (id, state) => {
@@ -1047,6 +1132,28 @@ const char DASHBOARD_HTML[] PROGMEM = R"rawhtml(
             }
         }
 
+        function openWifiModal() {
+            document.getElementById('wifi-modal').classList.add('show');
+            const currentSSID = document.getElementById('ssid-val').innerText;
+            if (currentSSID && currentSSID !== '-') {
+                document.getElementById('wifi-ssid').value = currentSSID;
+            }
+        }
+
+        function closeWifiModal() {
+            document.getElementById('wifi-modal').classList.remove('show');
+        }
+
+        async function saveWifiAndClose() {
+            const ssid = document.getElementById('wifi-ssid').value;
+            if (!ssid) {
+                showToast("SSID-ul nu poate fi gol!");
+                return;
+            }
+            await saveWifi();
+            closeWifiModal();
+        }
+
         async function applyPreset() {
             const pNum = document.getElementById('preset-select').value;
             if (!confirm(`Sigur dorești să aplici Presetul ${pNum}? Aceasta va suprascrie orarul actual al releelor.`)) {
@@ -1094,6 +1201,99 @@ const char DASHBOARD_HTML[] PROGMEM = R"rawhtml(
             }
         }
 
+        let telemetryChartInstance = null;
+        async function fetchTelemetry() {
+            try {
+                const res = await fetch('/api/telemetry');
+                const data = await res.json();
+                
+                const labels = data.map(item => item.time);
+                const values = data.map(item => item.light);
+                
+                const ctx = document.getElementById('telemetryChart').getContext('2d');
+                
+                if (telemetryChartInstance) {
+                    telemetryChartInstance.data.labels = labels;
+                    telemetryChartInstance.data.datasets[0].data = values;
+                    telemetryChartInstance.update();
+                } else {
+                    const gradient = ctx.createLinearGradient(0, 0, 0, 200);
+                    gradient.addColorStop(0, 'rgba(56, 189, 248, 0.3)');
+                    gradient.addColorStop(1, 'rgba(56, 189, 248, 0.0)');
+                    
+                    telemetryChartInstance = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: 'Nivel Lumină (%)',
+                                data: values,
+                                borderColor: '#38bdf8',
+                                borderWidth: 2,
+                                backgroundColor: gradient,
+                                fill: true,
+                                tension: 0.3,
+                                pointRadius: 2,
+                                pointHoverRadius: 5,
+                                pointBackgroundColor: '#38bdf8'
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    display: false
+                                },
+                                tooltip: {
+                                    backgroundColor: '#1e2942',
+                                    titleFont: { family: 'Outfit', size: 12 },
+                                    bodyFont: { family: 'Outfit', size: 12 },
+                                    borderColor: 'rgba(255, 255, 255, 0.08)',
+                                    borderWidth: 1,
+                                    displayColors: false,
+                                    callbacks: {
+                                        label: function(context) {
+                                            return `Lumină: ${context.parsed.y}%`;
+                                        }
+                                    }
+                                }
+                            },
+                            scales: {
+                                x: {
+                                    grid: {
+                                        color: 'rgba(255, 255, 255, 0.05)'
+                                    },
+                                    ticks: {
+                                        color: '#94a3b8',
+                                        font: { family: 'Outfit', size: 10 },
+                                        maxTicksLimit: 8
+                                    }
+                                },
+                                y: {
+                                    min: 0,
+                                    max: 100,
+                                    grid: {
+                                        color: 'rgba(255, 255, 255, 0.05)'
+                                    },
+                                    ticks: {
+                                        color: '#94a3b8',
+                                        font: { family: 'Outfit', size: 10 },
+                                        stepSize: 20,
+                                        callback: function(value) {
+                                            return value + '%';
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+            } catch (err) {
+                console.error("Error fetching telemetry:", err);
+            }
+        }
+
         // Initialize UI components
         initHourGrid();
 
@@ -1101,12 +1301,18 @@ const char DASHBOARD_HTML[] PROGMEM = R"rawhtml(
         fetchStatus();
         fetchSchedules();
         fetchHistory();
+        fetchTelemetry();
 
         // Polling updates (every 2 seconds)
         setInterval(() => {
             fetchStatus();
             fetchHistory();
         }, 2000);
+
+        // Polling telemetry (every 30 seconds)
+        setInterval(() => {
+            fetchTelemetry();
+        }, 30000);
     </script>
 </body>
 </html>
@@ -1134,6 +1340,7 @@ void handleStatus() {
     r += "\"wifi_status\":\"" + getNetworkStatusString() + "\",";
     r += "\"ip\":\"" + getIPAddress() + "\",";
     r += "\"uptime\":" + String(millis() / 1000) + ",";
+    r += "\"light_percent\":" + String(getLightLevelPercent()) + ",";
     r += "\"relays\":[";
     for (int i = 1; i <= 4; i++) {
         RelayState s = getRelayState(i);
@@ -1274,6 +1481,9 @@ void setup() {
     server.on("/api/history", HTTP_GET, handleHistory);
     server.on("/api/wifi", HTTP_POST, handleWiFi);
     server.on("/api/presets", HTTP_POST, handlePresets);
+    server.on("/api/telemetry", HTTP_GET, []() {
+        server.send(200, "application/json", getTelemetryJSON());
+    });
     
     server.onNotFound([]() {
         server.send(404, "text/plain", "Not Found");
@@ -1339,6 +1549,41 @@ void loop() {
     
     // 3. Command relays based on calculated system state & scheduling profiles
     updateRelays(currentSystemMode);
+    
+    // 6. Periodic telemetry history collection (every 15 minutes)
+    static unsigned long lastTelemetryTime = 0;
+    if (isTimeSynced() && (lastTelemetryTime == 0 || millis() - lastTelemetryTime >= 900000UL)) {
+        lastTelemetryTime = millis();
+        int currentPercent = getLightLevelPercent();
+        // Get the current HH:MM time
+        char timeBuf[10];
+        time_t tNow = time(nullptr);
+        struct tm* tInfo = localtime(&tNow);
+        strftime(timeBuf, sizeof(timeBuf), "%H:%M", tInfo);
+        addTelemetryReading(currentPercent, String(timeBuf));
+    }
+
+    // 7. Smart Diagnostic: Detect Main Light (Relay 1) physical failure
+    static bool lampDefectLogged = false;
+    static unsigned long lampTurnedOnTime = 0;
+    RelayState relay1State = getRelayState(1);
+    
+    if (relay1State.physicalState) {
+        if (lampTurnedOnTime == 0) {
+            lampTurnedOnTime = millis();
+        }
+        // If light has been ON for more than 30 seconds, check the sensor
+        if (millis() - lampTurnedOnTime >= 30000) {
+            int lightLvl = getLightLevelPercent();
+            if (lightLvl < 15 && !lampDefectLogged) {
+                logSystemEvent("[ATENȚIE] Defecțiune lampă! Releul 1 este PORNIT, dar luminozitatea este sub 15% (" + String(lightLvl) + "%). Verifică alimentarea lămpii.");
+                lampDefectLogged = true;
+            }
+        }
+    } else {
+        lampTurnedOnTime = 0;
+        lampDefectLogged = false;
+    }
     
     // 4. Web requests handler
     server.handleClient();

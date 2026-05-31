@@ -394,6 +394,13 @@ void updateRelays(SystemMode currentMode) {
         }
     }
     
+    // Ambient Lighting (Relay 4) Energy Saving:
+    // If ambient light is scheduled to be ON, but natural room light is already bright (e.g. > 50%),
+    // turn it OFF to save energy.
+    if (targets[3] && getLightLevelPercent() > 50) {
+        targets[3] = false;
+    }
+
     // 2. Drive physical pins (apply manual overrides if active, unless in power loss mode)
     for (int i = 0; i < 4; i++) {
         if (currentMode == MODE_POWER_LOSS) {
@@ -418,4 +425,46 @@ void updateRelays(SystemMode currentMode) {
         Serial.printf("[SYSTEM] Mod operare sistem schimbat în: %s\n", getModeString(currentMode).c_str());
         lastExecutedMode = currentMode;
     }
+}
+
+// Telemetry API implementations
+int getLightLevelPercent() {
+    int val = analogRead(PIN_INPUT_LIGHT_A0);
+    int percent = map(val, 0, 1023, 0, 100);
+    if (percent < 0) percent = 0;
+    if (percent > 100) percent = 100;
+    return percent;
+}
+
+// RAM Telemetry circular buffer (last 96 readings)
+static int telemetryLightPercent[96] = {0};
+static String telemetryTime[96];
+static int telemetryCount = 0;
+static int telemetryIndex = 0;
+
+void addTelemetryReading(int percent, const String& timeStr) {
+    telemetryLightPercent[telemetryIndex] = percent;
+    telemetryTime[telemetryIndex] = timeStr;
+    telemetryIndex = (telemetryIndex + 1) % 96;
+    if (telemetryCount < 96) {
+        telemetryCount++;
+    }
+}
+
+String getTelemetryJSON() {
+    String r = "[";
+    int start = 0;
+    if (telemetryCount == 96) {
+        start = telemetryIndex;
+    }
+    for (int i = 0; i < telemetryCount; i++) {
+        int idx = (start + i) % 96;
+        r += "{";
+        r += "\"time\":\"" + telemetryTime[idx] + "\",";
+        r += "\"light\":" + String(telemetryLightPercent[idx]);
+        r += "}";
+        if (i < telemetryCount - 1) r += ",";
+    }
+    r += "]";
+    return r;
 }

@@ -61,6 +61,11 @@ void logSystemEvent(const String& msg);
 String getHistoryJSON();
 String getSchedulesJSON();
 
+// Telemetry API
+int getLightLevelPercent();
+void addTelemetryReading(int percent, const String& timeStr);
+String getTelemetryJSON();
+
 // Helper to convert SystemMode to string
 String getModeString(SystemMode mode);
 

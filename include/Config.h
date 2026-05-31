@@ -54,6 +54,9 @@
 #define PIN_INPUT_GPIO2       2   // GPIO2
 #define PIN_INPUT_GPIO15      15  // GPIO15
 
+// Analog input pin for Light Sensor LDR
+#define PIN_INPUT_LIGHT_A0    A0  // ADC0
+
 // Status LED (Onboard Blue LED, active LOW)
 #define PIN_STATUS_LED        5   // GPIO5
 

@@ -1,0 +1,35 @@
+stateDiagram-v2
+    [*] --> MODE_DAY : Pornire Sistem (Power Sense = HIGH, Fallback Implicit)
+    
+    state "MOD NORMAL - ZI" as MODE_DAY {
+        direction L
+        L_LED: Iluminat Principal = ON
+        V_CO2: Electrovalva CO2 = ON (Deschisa)
+        P_AIR: Pompa de Aer = OFF
+    }
+    
+    state "MOD NORMAL - NOAPTE" as MODE_NIGHT {
+        direction L
+        L_LED_N: Iluminat Principal = OFF
+        V_CO2_N: Electrovalva CO2 = OFF (Inchisa)
+        P_AIR_N: Pompa de Aer = PULSE (1m ON / 2m OFF)
+    }
+
+    state "MOD AVARIE / PANA CURENT" as MODE_POWER_LOSS {
+        direction L
+        L_LED_E: Iluminat Principal = OFF (Fortat)
+        V_CO2_E: Electrovalva CO2 = OFF (Inchisa)
+        P_AIR_E: Pompa de Aer = PULSE (1m ON / 2m OFF)
+    }
+
+    %% Tranzitii intre moduri normale
+    MODE_DAY --> MODE_NIGHT : Ora curenta >= Sfarsit Zi (20:00) / Power Sense = HIGH
+    MODE_NIGHT --> MODE_DAY : Ora curenta >= Inceput Zi (08:00) / Power Sense = HIGH
+    
+    %% Tranzitii la pana de curent
+    MODE_DAY --> MODE_POWER_LOSS : Power Sense devine LOW (Mains 220V Picat)
+    MODE_NIGHT --> MODE_POWER_LOSS : Power Sense devine LOW (Mains 220V Picat)
+    
+    %% Tranzitii la revenirea curentului
+    MODE_POWER_LOSS --> MODE_DAY : Power Sense devine HIGH AND Ora in interval ZI
+    MODE_POWER_LOSS --> MODE_NIGHT : Power Sense devine HIGH AND Ora in interval NOAPTE / Nesincronizat

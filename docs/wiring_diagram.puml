@@ -1,0 +1,71 @@
+@startuml WiringDiagram
+title Schema Electrica si de Alimentare - BioBox 56L (Aquatlantis)
+
+skinparam componentStyle uml2
+skinparam Monochrome false
+skinparam Shadowing true
+
+cloud "Retea AC 220V" as Retea
+
+node "Zona Priza Permanente 220V AC" {
+    component [Incalzitor (Termostat)] as Incalzitor
+    component [Pompa Biobox (Recirculare)] as Recirculare
+}
+
+node "Zona Automatizata (Low Voltage 12V/5V UPS)" {
+    component [Sursa Alimentare 12V DC (Mains)] as Sursa12V
+    component [Dioda Schottky (1N5822)] as Dioda
+    component [Baterie Backup Li-Ion 3S (11.1V)] as Baterie
+    component [Buck Converter (Step-Down 12V to 5V)] as Buck
+    
+    component [Divizor Rezistiv (10k / 2.2k)] as Divizor
+    
+    interface "GPIO0 (Power Sense)" as GPIO0
+    interface "GPIO5 (Status LED)" as GPIO5
+    
+    node "ESP-12F (ESP8266)" as ESP {
+        portin VCC_ESP
+        portin GND_ESP
+    }
+    
+    node "Placa Relee 4 Canale" as Board {
+        component [Relay 1 (GPIO16)] as Relay1
+        component [Relay 2 (GPIO14)] as Relay2
+        component [Relay 3 (GPIO12)] as Relay3
+        component [Relay 4 (GPIO13)] as Relay4
+    }
+}
+
+node "Actuatori si Periferice Acvariu" {
+    component [Lampa LED Capac (12V)] as LedLight
+    component [Electrovalva CO2 NC (12V)] as CO2Valve
+    component [Pompa Aer Oxigenare (5V)] as AirPump
+}
+
+' Connections
+Retea --> Incalzitor : 220V AC
+Retea --> Recirculare : 220V AC
+Retea --> Sursa12V : 220V AC
+
+Sursa12V --> Dioda : 12V DC (+) (Mains Power)
+Sursa12V --> Divizor : 12V DC (+) (Mains Detect Line)
+Divizor --> GPIO0 : Tensiune redusa (~2.16V)
+Divizor --> GND_ESP : Masa Comuna
+
+Dioda --> Baterie : Incarcare/Paralel dupa dioda (Magistrala UPS 12V)
+Dioda --> Buck : 12V UPS Rail (+)
+Dioda --> Relay1 : Alimentare COM 12V
+Dioda --> Relay2 : Alimentare COM 12V
+
+Baterie --> Buck : Alimentare din Baterie in caz de pana
+Buck --> ESP : 5V DC (VCC_ESP)
+Buck --> Relay3 : Alimentare COM 5V
+Buck --> GND_ESP : GND Rail
+
+GPIO5 --> ESP : Indicator Retea (LED intern)
+
+Relay1 --> LedLight : NO Pin -> 12V LED Light
+Relay2 --> CO2Valve : NO Pin -> 12V Solenoid CO2
+Relay3 --> AirPump : NO Pin -> 5V Air Pump
+
+@enduml

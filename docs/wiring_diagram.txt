@@ -1,0 +1,105 @@
+================================================================================
+SCHEMA ELECTRICA SI DE ALIMENTARE - AQUATLANTIS AQUARIUM CONTROLLER
+================================================================================
+
+                                    +-----------------------+
+                                    | 220V AC Retea Electr. |
+                                    +-----------------------+
+                                        |        |        |
+    +-----------------------------+-----+        |        +-----+--------------------+
+    |                             |              |              |                    |
++-------+                     +-------+      +-------+      +-------+            +-------+
+| Incalzitor                  | Recirculare  | Sursa |      | Sursa |            | Sursa |
+| 220V AC                     | Pompa Biobox | 12V DC|      | 12V DC|            | 12V DC|
+| (Termostat)                 | (220V AC)    | (Mains|      | (Mains|            | (Mains|
+| Conectat direct             | Conectat     | 3A-5A)|      | 3A-5A)|            | 3A-5A)|
+|                             | direct       |  (+)  |      |  (-)  |            |  (+)  |
++-------+                     +-------+      +-------+      +-------+            +-------+
+    |                             |              |              |                    |
+    v                             v              |              +-------+            |
+  [ACVARIU]                     [ACVARIU]        |                      |            |
+                                                 v                      v            |
+                                            (12V Retea)           (Comun GND Rail)   |
+                                                 |                                   |
+                         +-----------------------+                                   |
+                         |                                                           |
+                         v                                                           |
+                 [DIVIZOR REZISTIV]                                                  |
+                  (Power Sense Line)                                                 |
+                         |                                                           |
+                         +---+ 10kOhm                                                |
+                         |   |                                                       |
+                         +---|------> Pin GPIO0 (ESP8266)                            |
+                         |   |                                                       |
+                         +---+ 2.2kOhm                                               |
+                         |                                                           |
+                         v                                                           |
+                   (Comun GND Rail)                                                  |
+                                                                                     |
+                         +-----------------------------------------------------------+
+                         |
+                         v
+                  [DIODA BLOCK/SCHOTTKY]
+                  (Ex: 1N5822 sau 1N4007)
+                  Previne returul tensiunii bateriei in sursa si detectorul GPIO0
+                     Anod (A) -> Iesire Sursa Retea 12V
+                     Katod (K) -> Magistrala UPS 12V (+)
+                         |
+                         v
+   +---------------------+-----------------------------+-----------------------------+
+   | (Magistrala +12V UPS dupa dioda)                  |                             |
+   |                                                   |                             |
+   |     +-------------------+                         |                             |
+   |     | Baterie Backup    |                         |                             |
+   |     | Li-Ion 3S (11.1V) |                         |                             |
+   |     | cu BMS integrat   |                         |                             |
+   |     +-------------------+                         |                             |
+   |               |                                   |                             |
+   +----> (+)      |                                   |                             |
+   |               v                                   |                             |
+   |      (Comun GND Rail)                             |                             |
+   |                                                   v                             v
+   |                                            [RELAY 1 COM]                 [RELAY 2 COM]
+   |                                            (Iluminat Led)                (Solenoid CO2)
+   |                                                   |                             |
+   v                                                   v (Pin NO)                    v (Pin NO)
++-----------------------+                         +-----------+                 +------------+
+| Buck Converter        |                         | Lampa Led |                 | Valva CO2  |
+| Step-Down (12V -> 5V) |                         | 12V (15W) |                 | 12V NC     |
++-----------------------+                         +-----------+                 +------------+
+  |                   |                                 |                             |
+  v (+5V Rail)        v (GND)                           v                             v
+  |                   +------------+             (Comun GND)                   (Comun GND)
+  |                                |
+  +---------------+                |
+  |               |                |
+  v               v                v
+[ESP8266 VCC]   [RELAY 3 COM]    (Comun GND Rail)
+(Placa ESP-12F) (Pompa Aer)
+                  |
+                  v (Pin NO)
+                +-----------+
+                | Pompa Aer |
+                | 5V (3W)   |
+                +-----------+
+                  |
+                  v
+             (Comun GND)
+
+================================================================================
+NOTE SI EXPLICATII DE CABLAJ:
+1. Comun GND Rail: Toate masele (-) de la Sursa 12V, Baterie, ESP8266, Buck Converter,
+   Lampa LED, Electrovalva CO2 si Pompa de Aer TREBUIE sa fie legate impreuna.
+2. Dioda Schottky: Este cruciala deoarece asigura trecerea instantanee pe baterie
+   fara intrerupere si previne scurgerea curentului din baterie inapoi in sursa oprita,
+   ceea ce ar fi falsificat citirea pe pinul GPIO0 (Power Sense).
+3. Divizorul Rezistiv: Coboara tensiunea de 12V la ~2.16V (folosind 10k si 2.2k)
+   sau ~2.97V (folosind 10k si 3.3k), protejand pinul GPIO0 (care tolera maxim 3.3V).
+4. Releele: Sunt alimentate conform tensiunilor adecvate: Relay 1, 2 si 4 comuta 12V DC, 
+   Relay 3 comuta 5V DC venind din Buck Converter.
+5. LED Status: LED-ul albastru de pe modulul ESP-12F este conectat intern la GPIO5 (Active LOW)
+   si este folosit pentru semnalizarea diagnostica a starii retelei (WiFi/NTP).
+6. Relay 4 (Iluminat Ambiental): Se cableaza identic cu Relay 1. Iesirea de +12V UPS dupa dioda este
+   legata la pinul COM (Common) al Relay 4. Pinul NO (Normally Open) al Relay 4 merge la plusul (+) al
+   Lămpii Ambientale LED de 12V, iar minusul (-) acesteia se conecteaza la Comun GND Rail.
+================================================================================

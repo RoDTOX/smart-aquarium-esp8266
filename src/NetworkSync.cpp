@@ -124,6 +124,17 @@ String getFormattedTime() {
     return String(buf);
 }
 
+String getFormattedLogTime() {
+    if (!isTimeSynced()) {
+        return "--.-- --:--:--";
+    }
+    time_t now = time(nullptr);
+    struct tm* timeinfo = localtime(&now);
+    char buf[20];
+    strftime(buf, sizeof(buf), "%d.%m %H:%M:%S", timeinfo);
+    return String(buf);
+}
+
 String getWiFiSSID() {
     if (WiFi.status() == WL_CONNECTED) {
         return WiFi.SSID();

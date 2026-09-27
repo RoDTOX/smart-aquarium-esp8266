@@ -1,138 +1,162 @@
-# Plan de Design UI: Aquatlantis Dashboard
+# UI Design Plan & REST API: Aquatlantis Dashboard (v3.2)
 
-Acest document descrie arhitectura interfeței web minimale găzduite direct pe ESP8266 pentru controlul acvariului BioBox 56L.
+This document describes the web interface architecture and REST API endpoints hosted on the ESP8266 controller for the Aquatlantis BioBox 56L aquarium.
 
-## 1. Concepte Vizuale și Sistemul de Culori (Aestetica Premium)
-Pentru a asigura o primă impresie premium și lizibilitate în mediu întunecat (lângă acvariu noaptea), interfața folosește o temă dark modernă bazată pe următoarele variabile CSS (coloristică din paleta Slate/Sky/Emerald):
+## 1. Visual Concepts & Color Palette
 
-*   **Fundal Principal (`--bg-base`):** `#0b0f19` (un bleumarin foarte închis, aproape negru).
-*   **Fundal Carduri (`--bg-surface` / `--bg-card`):** `#151d30` și `#1e2942` (nuanțe de albastru închis pentru a oferi profunzime tridimensională).
-*   **Culoare Accent (`--accent-primary`):** `#38bdf8` (Cyan luminos) cu un efect de strălucire (`box-shadow` cu opacitate).
-*   **Stări Indicatori:**
-    *   *OK / PORNIT (`--state-ok`):* `#10b981` (Smarald cu aură verde).
-    *   *Atenție / Puls (`--state-warn`):* `#f59e0b` (Chihlimbar).
-    *   *Eroare / Oprit (`--state-danger`):* `#ef4444` (Roșu stins).
+To provide a sleek, non-fatiguing experience next to an illuminated aquarium at night, the UI uses a dark glassmorphism aesthetic based on CSS variables:
 
----
-
-## 2. Wireframe / Structura Paginii
-Pagina este organizată într-o grilă responsivă care se adaptează automat de la telefon (o singură coloană) la tabletă/desktop (două sau mai multe coloane).
-
-```
-+--------------------------------------------------------------+
-| [Icon] Aquatlantis                WiFi Status: [Connected (O)] |
-| Smart Aquarium Controller | BioBox 56L                       |
-+--------------------------------------------------------------+
-|                                                              |
-|  +-------------------------+    +-------------------------+  |
-|  | Stare Sistem            |    | Control Periferice      |  |
-|  |-------------------------|    |-------------------------|  |
-|  | Mod: Normal - Zi  (O)   |    | Iluminat Principal [ON ]|  |
-|  | Rețea 220V: Activ (O)   |    | [Forțează] [Auto/Man]   |  |
-|  | Timp: 16:40:34          |    |                         |  |
-|  | Uptime: 2h 15m          |    | Electrovalvă CO2   [ON ]|  |
-|  | RSSI: -65 dBm           |    | [Forțează] [Auto/Man]   |  |
-|  | IP: 192.168.1.150       |    |                         |  |
-|  +-------------------------+    | Pompă de Aer       [OFF]|  |
-|                                 | [Forțează] [Auto/Man]   |  |
-|  +-------------------------+    |                         |  |
-|  | Configurare Programe    |    | Releu 4 / Aux      [OFF]|  |
-|  |-------------------------|    | [Forțează] [Auto/Man]   |  |
-|  | Zi Start: [ 08 ]        |    |                         |  |
-|  | Zi End:   [ 20 ]        |    | [Revenire la Auto (Toate)]|
-|  | Pompă ON: [ 60 ] sec     |    +-------------------------+  |
-|  | Pompă OFF:[120 ] sec     |                                 |
-|  | [Salvează Setări]       |    +-------------------------+  |
-|  +-------------------------+    | Configurare WiFi        |  |
-|                                 |-------------------------|  |
-|                                 | SSID:   [My_SSID]       |  |
-|                                 | Parolă: [•••••••]       |  |
-|                                 | [Conectează Dispozitiv] |  |
-|                                 +-------------------------+  |
-+--------------------------------------------------------------+
-```
+*   **Base Background (`--bg-base`):** `#080d1a` (deep midnight blue).
+*   **Card Background (`--bg-surface` / `--bg-card`):** `#111827` and `#1a233a` with subtle translucency.
+*   **Accent Color (`--accent-primary`):** `#38bdf8` (vibrant cyan).
+*   **Status Indicators:**
+    *   *OK / Active (`--state-ok`):* `#10b981` (emerald green with pulse indicator).
+    *   *Warning / Pulse Rest (`--state-warn`):* `#f59e0b` (amber).
+    *   *Danger / Manual Forced Off (`--state-danger`):* `#ef4444` (crimson red).
+*   **Zero External CDN Dependencies:** All styling, typography, and SVG/Unicode icons are self-hosted directly from flash memory for 100% offline local network reliability.
 
 ---
 
-## 3. Integrare REST API și JSON
-Interfața comunică exclusiv prin apeluri asincrone `fetch` către endpoints-urile web serverului ESP8266:
+## 2. Layout Structure & Navigation Flow
+
+The dashboard is structured into a prioritized modular layout:
+
+```text
++--------------------------------------------------------------+
+| [Header] Aquatlantis Smart Aquarium                          |
++--------------------------------------------------------------+
+| [Banner] 🫧 Feed Mode Active (09:45 remaining)      [Cancel] |
++--------------------------------------------------------------+
+| 1. SYSTEM STATUS                                             |
+|  - Operating Mode: ☀️ Day (Normal) / 🌙 Night / ⚡ Power Loss |
+|  - NTP Clock, Uptime, WiFi Network, RSSI, IP, Hostname       |
++--------------------------------------------------------------+
+| 2. PERIPHERAL STATUS & CONTROL (Variant C Compact)           |
+|  - Relay 1 [Main Light] [GPIO 16]         [AUTO]  [⏻]        |
+|    └─ Pill: ⚪ Off • Starts at 13:00                         |
+|  - Relay 2 [CO2 Solenoid] [GPIO 14]       [AUTO]  [⏻]        |
+|    └─ Pill: ⚪ Off • Starts at 11:00                         |
+|  - Relay 3 [Air Pump] [GPIO 12]           [AUTO]  [⏻]        |
+|    └─ Pill: 🟢 Running • Pause in 9m 54s                     |
+|  - Relay 4 [Ambient Light] [GPIO 13]      [AUTO]  [⏻]        |
+|    └─ Pill: 🟢 On • Until 0:00                               |
+|  - Quick Actions: [🫧 Feed Mode (10m)]  [Auto (All)]          |
++--------------------------------------------------------------+
+| 3. 24H SCHEDULE CONFIGURATION & PRESETS                      |
+|  - Relay Selector (1-4) with dynamic name                    |
+|  - Visual 24-hour hour grid (00:00 - 23:00)                  |
+|  - Operating Mode: Continuous / Intermittent (Pulse)         |
+|  - Pulse Duration: Run Time [Min][Sec] / Rest Time [Min][Sec]|
+|  - [💾 Save Relay Schedule]                                  |
+|  - Presets: [Dropdown] [Apply] [Save New] [Delete]           |
++--------------------------------------------------------------+
+| 4. DIGITAL INPUTS & AUXILIARY SENSORS (I/O)                  |
+|  - GPIO 0 (Power Sensor), GPIO 4, GPIO 2, GPIO 15            |
+|  - Light Sensor A0: Live dynamic progress meter              |
++--------------------------------------------------------------+
+| 5. SYSTEM ADMINISTRATION                                     |
+|  - [✏️ Rename Relays & Sensors]                              |
+|  - [📶 WiFi Setup]                                           |
+|  - [⬆️ OTA Firmware Flash]                                   |
++--------------------------------------------------------------+
+| 6. SYSTEM LOG (COMPACT TIMELINE)                             |
+|  - [DD.MM HH:MM:SS] Single-line verified system events       |
+|  - Explicit user operation confirmations                     |
++--------------------------------------------------------------+
+```
+
+---
+
+## 3. REST API Specification (JSON)
 
 ### `GET /api/status`
-Returnează starea completă de telemetrie și funcționare în format JSON:
+Returns complete telemetry, custom hardware names, active preset, and feed mode status:
 ```json
 {
-  "mode": "MOD NORMAL - ZI",
-  "mode_id": 0,
+  "mode": "🌙 Night (Normal)",
+  "mode_id": 1,
+  "feed_mode": false,
+  "feed_remaining": 0,
   "inputs": {
     "gpio0": true,
     "gpio4": true,
     "gpio2": true,
     "gpio15": false
   },
-  "time": "2026-05-30 01:25:00",
-  "wifi_ssid": "Your_WiFi_SSID",
-  "wifi_rssi": -54,
+  "time": "2026-09-27 23:23:27",
+  "wifi_ssid": "Home_WiFi",
+  "wifi_rssi": -63,
   "wifi_status": "Connected",
   "ip": "192.168.1.32",
-  "uptime": 720,
+  "uptime": 86400,
+  "light_percent": 8,
+  "active_preset": 1,
   "relays": [
-    {"num": 1, "name": "Iluminat Principal", "state": true, "override": false, "override_state": false},
-    {"num": 2, "name": "Electrovalva CO2", "state": true, "override": false, "override_state": false},
-    {"num": 3, "name": "Pompa de Aer", "state": false, "override": false, "override_state": false},
-    {"num": 4, "name": "Iluminat Ambiental", "state": false, "override": false, "override_state": false}
-  ]
+    {"num": 1, "name": "Main Light", "state": false, "override": false, "override_state": false, "status_desc": "⚪ Off • Starts at 13:00"},
+    {"num": 2, "name": "CO2 Solenoid", "state": false, "override": false, "override_state": false, "status_desc": "⚪ Off • Starts at 11:00"},
+    {"num": 3, "name": "Air Pump", "state": true, "override": false, "override_state": false, "status_desc": "🟢 Running • Pause in 9m 54s"},
+    {"num": 4, "name": "Ambient Light", "state": true, "override": false, "override_state": false, "status_desc": "🟢 On • Until 0:00"}
+  ],
+  "names": {
+    "relays": ["Main Light", "CO2 Solenoid", "Air Pump", "Ambient Light"],
+    "inputs": ["Power Sensor (GPIO0)", "GPIO 4 (Free)", "GPIO 2 (Free)", "GPIO 15 (Free)"],
+    "analog": "Light Sensor (A0)"
+  }
 }
 ```
 
-### `GET /api/override`
-Configurează forțarea manuală a stărilor releelor.
-Parametri:
-*   `clear=1`: Resetează toate releele înapoi pe controlul automat (Orar).
-*   `relay=[1-4]&override=[0|1]&state=[0|1]`: Setează starea manuală (`state=1` pentru ON, `state=0` pentru OFF) sau dezactivează forțarea manuală (`override=0`).
+### `POST /api/names`
+Updates custom peripheral names and saves them to LittleFS (`/names.cfg`).
+Parameters (`application/x-www-form-urlencoded`):
+* `r1, r2, r3, r4`: Names for relays 1..4 (max 31 chars).
+* `in0, in4, in2, in15`: Names for digital inputs (max 31 chars).
+* `a0`: Name for analog sensor input.
 
-### `GET /api/schedule` sau `POST /api/schedule`
-Citește sau actualizează orarele individuale ale releelor.
-*   **Citire (`GET /api/schedule` fără parametri)**: Returnează un array JSON cu setările active:
-    ```json
-    [
-      {"num": 1, "active_hours": 2088960, "behavior": 0, "pulse_on": 60, "pulse_off": 120},
-      {"num": 2, "active_hours": 489472, "behavior": 0, "pulse_on": 60, "pulse_off": 120},
-      {"num": 3, "active_hours": 14682111, "behavior": 0, "pulse_on": 60, "pulse_off": 120},
-      {"num": 4, "active_hours": 14680064, "behavior": 0, "pulse_on": 60, "pulse_off": 120}
-    ]
-    ```
-*   **Actualizare (`POST /api/schedule` sau `GET /api/schedule?relay=...`)**:
-    Parametri necesari:
-    *   `relay=[1-4]`
-    *   `active_hours=[valoare zecimală bitmap 24 biți]` (ex: `2088960` reprezintă `0x1FE000` pentru orele 13-20)
-    *   `behavior=[0|1]` (0 = Continuu, 1 = Pulsatoriu)
-    *   `pulse_on=[secunde]`
-    *   `pulse_off=[secunde]`
-
-### `GET /api/history`
-Returnează ultimele loguri înregistrate în memoria flash în format JSON:
+### `GET /api/presets`
+Returns all presets (built-in factory presets + user-defined presets):
 ```json
 [
-  {"time": "2026-05-30 01:25:00", "msg": "Sistem pornit. Relee inițializate."},
-  {"time": "2026-05-30 01:27:04", "msg": "Releul 1: Forțat MANUAL pe PORNIT"}
+  {"id": 1, "name": "Preset 1: Standard Aquatlantis (Factory)", "builtin": true},
+  {"id": 2, "name": "Preset 2: Algae Control (Factory)", "builtin": true},
+  {"id": 3, "name": "Preset 3: Maintenance / Lights Off (Factory)", "builtin": true},
+  {"id": 100, "name": "Summer Schedule", "builtin": false}
 ]
 ```
 
 ### `POST /api/presets`
-Aplică un preset global sau execută o resetare completă de configurare.
-Parametri:
-*   `apply=[1-3]`: Încarcă presetul dorit (1 = Standard, 2 = Control Alge, 3 = Doar Aerare).
-*   `reset=1`: Șterge fișierul LittleFS `/schedules.cfg` și încarcă valorile implicite din cod.
+Presets management:
+* `apply=[id]`: Applies specified preset (1..3 or 100..107).
+* `save=1&name=[name]`: Saves current 4-relay schedule under specified custom name.
+* `delete=[id]`: Deletes custom preset (id >= 100).
+* `reset=1`: Resets schedules to factory defaults.
 
-### `GET /api/wifi`
-Modifică credențialele rețelei locale WiFi de acasă.
-Parametri:
-*   `ssid=[SSID]`, `pass=[Parolă]`: Pornește reconectarea la noul router.
+### `POST /api/feed`
+Controls Feeding Mode:
+* `action=start&duration=600`: Pauses air pump for 10 minutes (600s).
+* `action=stop`: Immediately cancels feeding pause and resumes schedule.
 
----
+### `GET /api/schedule` & `POST /api/schedule`
+* `GET`: Returns the array of 4 relay profiles.
+* `POST`: Saves schedule for specified relay:
+  * `relay=[1-4]`
+  * `active_hours=[bitmap 24h]`
+  * `behavior=[0|1]` (0 = continuous, 1 = pulse)
+  * `pulse_on=[seconds]`
+  * `pulse_off=[seconds]`
 
-## 4. Micro-interacțiuni Frontend
-1.  **Polling Automat:** Pagina execută `fetch('/api/status')` o dată la 2 secunde pentru a actualiza ceasul NTP, uptime-ul, semnalul WiFi și stările releelor în timp real fără reîncărcare.
-2.  **Toast Notification:** La trimiterea unei comenzi, un element plutitor în josul paginii afișează mesaje rapide precum „Releu 1 forțat manual” sau „Setări salvate!”.
-3.  **Dynamic Input Blocker:** Dacă utilizatorul editează o valoare în formular, actualizarea automată din polling este suspendată temporar pe input-ul activ (prin verificarea `document.activeElement`) pentru a preveni rescrierea datelor introduse.
-4.  **Glow-uri Stări:** Releele pornite au un indicator cu pulsație luminoasă verzuie, oferind feedback vizual instânt.
+### `POST /api/override`
+Manual override configuration:
+* `clear=1`: Resets all relays to automatic schedule.
+* `relay=[1-4]&override=[0|1]&state=[0|1]`: Sets manual forced state.
+
+### `GET /api/history`
+Returns event logs in compact single-line format (`DD.MM HH:MM:SS`):
+```json
+[
+  {"time": "27.09 23:20:15", "msg": "System started • Relays initialized"},
+  {"time": "27.09 23:22:40", "msg": "Schedule saved: Main Light [Continuous]"}
+]
+```
+
+### `GET /description.xml`
+SSDP / UPnP device schema used by Windows File Explorer for automatic network discovery.

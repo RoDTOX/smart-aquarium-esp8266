@@ -17,6 +17,7 @@ int getCurrentHour();
 
 // Fetch human readable timestamp
 String getFormattedTime();
+String getFormattedLogTime();
 
 // Network status queries
 String getWiFiSSID();

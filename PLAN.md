@@ -9,7 +9,7 @@ This document tracks all development tasks (TODO and DONE), prioritized by syste
 
 ## 🚀 Current System Status
 
-* **Current Firmware:** `v3.2.0`
+* **Current Firmware:** `v3.3.0`
 * **Hardware Status:** Fully assembled, stable, and operating in production (BioBox 56L aquarium).
 * **Access Endpoints:** `http://acvariu/` (Windows), `http://acvariu.local/` (Apple/Android), or `http://192.168.1.32/`.
 
@@ -18,6 +18,13 @@ This document tracks all development tasks (TODO and DONE), prioritized by syste
 ## ✅ Done (Completed)
 
 | Date & Time | Priority | Category | Feature / Completed Task | System Impact |
+|---|---|---|---|---|
+| **2026-09-28 11:54** | **P1 - Critical** | **OTA / Deploy** | **Firmware v3.3.0 build & OTA flash verification** | Firmware v3.3.0 live on ESP8266; aquatic theme, timeline, and preset overwrite verified. |
+| **2026-09-28 11:50** | **P1 - Critical** | **Presets / UX** | **Direct Preset Overwrite & Silent Schedule Auto-Commit (Section 3)** | Enabled in-place preset overwriting (`overwriteUserPreset()`), smart modal warning, and auto-sync of modified hours. |
+| **2026-09-28 11:45** | **P1 - Critical** | **UI / Visualization** | **24-Hour Multi-Relay Visual Infographic Timeline (Section 1)** | Added 0-24h horizontal timeline with diagonal hatched stripes for pulse mode and live real-time "NOW" cursor. |
+| **2026-09-28 11:40** | **P2 - Medium** | **Design / Theme** | **Cheerful Aquatic Theme Overhaul (UI / UX)** | Turquoise-azure ocean gradient, volumetric sunbeams, animated bubbles, seabed decor, and frosted glass cards. |
+| **2026-09-27 23:53** | **P2 - Medium** | **UI / Controls** | **Section 3 Relay tab buttons & unsaved modification race condition fix** | Replaced dropdown with 4 dedicated illuminated buttons; resolved status polling overwriting modified state. |
+| **2026-09-27 23:45** | **P1 - Critical** | **Hardware** | **Flyback diode (1N4007) installed on 12V CO2 solenoid coil** | Eliminates inductive back-EMF spikes and protects ESP8266 power rail from brownouts. |
 | **2026-09-27 23:25** | **P1 - Critical** | **Bugfix / Web UI** | **Fix activePresetId reference error & restore dynamic relay/preset rendering** | Resolved undeclared JS variable preventing dropdown presets and custom relay names from rendering. |
 | **2026-09-27 22:55** | **P1 - Critical** | **OTA / Deploy** | **Firmware v3.2.0 build & OTA flash verification** | Firmware v3.2.0 deployed live on ESP8266; Variant C controls & English UI active. |
 | **2026-09-27 22:50** | **P1 - Critical** | **UI / Controls** | **Variant C peripheral controls & dual action badges (Section 2)** | Eliminated 3rd row; dual action badges `[ AUTO ]` & `[ ⏻ ]` with dynamic colors & 1-tap override. |
@@ -62,10 +69,6 @@ Planned enhancements prioritized by system safety, reliability, and user impact.
   * *Description:* Water temperature is the most critical vital parameter for fish and plants. GPIO4 is currently exposed on header with internal pull-up capability. Connecting a waterproof DS18B20 probe will provide continuous live temperature telemetry.
   * *Safety Alarms:* Visual alarm and notification if water drops below 23°C (failed heater) or exceeds 28°C (summer overheating).
   * *Estimated Effort:* Low (`OneWire` and `DallasTemperature` libraries).
-* [ ] **Flyback Diodes / RC Snubbers on Inductive Loads:**
-  * *Description:* 12V DC CO2 solenoid and 220V AC air pump coils produce reverse voltage spikes during relay de-energization.
-  * *HW Action:* Install 1N4007 diode across CO2 solenoid coil to eliminate EMI glitches and protect ESP8266 power rail.
-  * *Estimated Effort:* 10 minutes soldering.
 
 ---
 

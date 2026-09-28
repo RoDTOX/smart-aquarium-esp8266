@@ -349,6 +349,20 @@ int saveUserPreset(const String& name) {
     return 100 + targetSlot;
 }
 
+bool overwriteUserPreset(int id) {
+    int idx = id - 100;
+    if (idx < 0 || idx >= MAX_USER_PRESETS || !userPresets[idx].active) {
+        return false;
+    }
+    for (int i = 0; i < 4; i++) {
+        userPresets[idx].profiles[i] = profiles[i];
+    }
+    saveUserPresetsToFS();
+    setActivePresetId(id);
+    logSystemEvent("Preset overwritten: \"" + String(userPresets[idx].name) + "\"");
+    return true;
+}
+
 bool applyUserPreset(int id) {
     int idx = id - 100;
     if (idx < 0 || idx >= MAX_USER_PRESETS || !userPresets[idx].active) {

@@ -75,6 +75,7 @@ String getIONamesJSON();
 
 // User Presets API
 int saveUserPreset(const String& name);
+bool overwriteUserPreset(int id);
 bool applyUserPreset(int id);
 bool deleteUserPreset(int id);
 String getPresetsJSON();

@@ -31,21 +31,24 @@ const char DASHBOARD_HTML[] PROGMEM = R"rawhtml(
         @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap');
         
         :root {
-            --bg-base: #080d1a;
-            --bg-surface: rgba(21, 30, 50, 0.75);
-            --bg-card: rgba(28, 40, 68, 0.7);
-            --text-primary: #f8fafc;
-            --text-secondary: #94a3b8;
-            --accent-primary: #38bdf8;
-            --accent-primary-glow: rgba(56, 189, 248, 0.35);
+            --bg-base: #0284c7;
+            --bg-surface: rgba(255, 255, 255, 0.68);
+            --bg-card: rgba(255, 255, 255, 0.75);
+            --text-primary: #0f172a;
+            --text-secondary: #334155;
+            --text-muted: #64748b;
+            --accent-primary: #0284c7;
+            --accent-primary-glow: rgba(2, 132, 199, 0.35);
+            --ocean-blue: #0284c7;
+            --ocean-deep: #0369a1;
             --state-ok: #10b981;
             --state-ok-glow: rgba(16, 185, 129, 0.35);
             --state-warn: #f59e0b;
             --state-warn-glow: rgba(245, 158, 11, 0.35);
             --state-danger: #ef4444;
             --state-danger-glow: rgba(239, 68, 68, 0.35);
-            --border-color: rgba(255, 255, 255, 0.08);
-            --border-glow: rgba(56, 189, 248, 0.15);
+            --border-color: rgba(255, 255, 255, 0.85);
+            --border-subtle: rgba(2, 132, 199, 0.18);
         }
         
         * {
@@ -56,13 +59,109 @@ const char DASHBOARD_HTML[] PROGMEM = R"rawhtml(
         
         body {
             font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background: radial-gradient(circle at 50% 0%, #172554 0%, var(--bg-base) 100%);
+            background: linear-gradient(180deg, #7dd3fc 0%, #38bdf8 12%, #0ea5e9 32%, #0284c7 62%, #0369a1 88%, #075985 100%);
+            background-attachment: fixed;
             color: var(--text-primary);
-            padding: 20px 14px;
+            padding: 16px 12px 90px;
             display: flex;
             flex-direction: column;
             align-items: center;
             min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+        
+        /* Sunbeams / God rays radiating from water surface */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-conic-gradient(from 180deg at 50% -70px, rgba(255, 255, 255, 0.2) 0deg, rgba(255, 255, 255, 0.02) 11deg, rgba(255, 255, 255, 0.2) 22deg);
+            mask-image: linear-gradient(180deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.3) 45%, transparent 75%);
+            -webkit-mask-image: linear-gradient(180deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.3) 45%, transparent 75%);
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        /* Floating animated bubbles */
+        .bubbles-layer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 1;
+        }
+        .bubble {
+            position: absolute;
+            bottom: -60px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 32% 32%, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.25) 55%, rgba(255,255,255,0.05) 75%, rgba(255,255,255,0.6) 100%);
+            box-shadow: inset 0 0 6px rgba(255,255,255,0.6), 0 0 5px rgba(255,255,255,0.3);
+            animation: riseBubble linear infinite;
+        }
+        @keyframes riseBubble {
+            0% { transform: translateY(0) translateX(0) scale(0.7); opacity: 0; }
+            12% { opacity: 0.85; }
+            85% { opacity: 0.85; }
+            100% { transform: translateY(-115vh) translateX(35px) scale(1.15); opacity: 0; }
+        }
+        
+        /* Swimming decorative fish */
+        .fish-decor {
+            position: fixed;
+            pointer-events: none;
+            z-index: 1;
+            font-size: 26px;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.15));
+            opacity: 0.85;
+        }
+        .fish-1 {
+            top: 18%;
+            left: -50px;
+            animation: swimAcross 28s linear infinite;
+        }
+        .fish-2 {
+            top: 55%;
+            right: -50px;
+            animation: swimAcrossReverse 34s linear infinite 5s;
+        }
+        .fish-3 {
+            top: 78%;
+            left: -50px;
+            animation: swimAcross 24s linear infinite 12s;
+        }
+        @keyframes swimAcross {
+            0% { transform: translateX(-10vw) translateY(0); }
+            50% { transform: translateX(55vw) translateY(-15px); }
+            100% { transform: translateX(115vw) translateY(10px); }
+        }
+        @keyframes swimAcrossReverse {
+            0% { transform: scaleX(-1) translateX(-10vw) translateY(0); }
+            50% { transform: scaleX(-1) translateX(55vw) translateY(18px); }
+            100% { transform: scaleX(-1) translateX(115vw) translateY(-8px); }
+        }
+
+        /* Sandy seabed footer decoration */
+        .seabed-decor {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 70px;
+            pointer-events: none;
+            z-index: 1;
+            background: linear-gradient(180deg, transparent 0%, rgba(254, 240, 138, 0.35) 35%, rgba(253, 224, 71, 0.8) 70%, #eab308 100%);
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            padding: 0 20px 8px;
+            font-size: 22px;
         }
         
         .container {
@@ -71,25 +170,32 @@ const char DASHBOARD_HTML[] PROGMEM = R"rawhtml(
             display: flex;
             flex-direction: column;
             gap: 18px;
+            position: relative;
+            z-index: 2;
         }
         
         header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: linear-gradient(135deg, var(--bg-surface), var(--bg-card));
-            padding: 16px 20px;
-            border-radius: 14px;
-            border: 1px solid var(--border-color);
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            padding: 14px 20px;
+            border-radius: 16px;
+            border: 1.5px solid var(--border-color);
+            box-shadow: 0 8px 24px rgba(2, 132, 199, 0.15);
         }
         
         h1 {
             font-size: 22px;
             font-weight: 800;
-            background: linear-gradient(to right, #38bdf8, #818cf8);
+            background: linear-gradient(135deg, #0284c7, #0369a1);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
         
         .sys-badge {
@@ -97,11 +203,13 @@ const char DASHBOARD_HTML[] PROGMEM = R"rawhtml(
             align-items: center;
             gap: 8px;
             font-size: 13px;
-            font-weight: 600;
+            font-weight: 700;
             padding: 6px 12px;
             border-radius: 9999px;
-            background: rgba(255,255,255,0.05);
-            border: 1px solid var(--border-color);
+            background: rgba(255, 255, 255, 0.85);
+            border: 1.5px solid rgba(16, 185, 129, 0.4);
+            color: #065f46;
+            box-shadow: 0 2px 6px rgba(16, 185, 129, 0.15);
         }
         
         .status-dot {
@@ -113,17 +221,17 @@ const char DASHBOARD_HTML[] PROGMEM = R"rawhtml(
         }
         
         @keyframes pulse-green {
-            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5); }
             70% { box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
             100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
         }
         @keyframes pulse-orange {
-            0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4); }
+            0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.5); }
             70% { box-shadow: 0 0 0 6px rgba(245, 158, 11, 0); }
             100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
         }
         @keyframes pulse-red {
-            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.5); }
             70% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
             100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
         }
@@ -133,33 +241,36 @@ const char DASHBOARD_HTML[] PROGMEM = R"rawhtml(
         .dot-red { background-color: var(--state-danger); animation: pulse-red 2s infinite; }
         
         .card {
-            background: linear-gradient(135deg, var(--bg-surface), var(--bg-card));
-            border-radius: 14px;
-            border: 1px solid var(--border-color);
+            background: var(--bg-card);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border-radius: 16px;
+            border: 1.5px solid var(--border-color);
             padding: 18px;
-            box-shadow: 0 4px 18px rgba(0,0,0,0.25);
+            box-shadow: 0 10px 30px rgba(2, 132, 199, 0.16), 0 2px 8px rgba(0,0,0,0.04);
             display: flex;
             flex-direction: column;
             gap: 14px;
-            transition: box-shadow 0.2s;
+            transition: box-shadow 0.2s, transform 0.2s;
+            position: relative;
+            z-index: 2;
         }
-        
         .card:hover {
-            box-shadow: 0 6px 22px rgba(56, 189, 248, 0.07);
+            box-shadow: 0 14px 38px rgba(2, 132, 199, 0.22);
         }
         
         .card-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 1px solid var(--border-color);
+            border-bottom: 1.5px solid var(--border-subtle);
             padding-bottom: 10px;
         }
         
         .card-title {
             font-size: 16px;
             font-weight: 700;
-            color: var(--accent-primary);
+            color: var(--ocean-deep);
             display: flex;
             align-items: center;
             gap: 8px;
@@ -172,20 +283,21 @@ const char DASHBOARD_HTML[] PROGMEM = R"rawhtml(
         }
         
         .stat-block {
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid var(--border-color);
+            background: rgba(255, 255, 255, 0.72);
+            border: 1px solid var(--border-subtle);
             padding: 8px 10px;
-            border-radius: 8px;
+            border-radius: 10px;
             display: flex;
             flex-direction: column;
             gap: 2px;
             min-width: 0;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.03);
         }
         
         .stat-block .stat-label {
             font-size: 10px;
-            color: var(--text-secondary);
-            font-weight: 600;
+            color: var(--ocean-deep);
+            font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.5px;
             overflow: hidden;
@@ -195,23 +307,221 @@ const char DASHBOARD_HTML[] PROGMEM = R"rawhtml(
         
         .stat-block .stat-val {
             font-size: 13px;
-            font-weight: 600;
+            font-weight: 700;
             color: var(--text-primary);
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
         }
 
+        /* 24-Hour Multi-Relay Timeline Component */
+        .timeline-card {
+            background: rgba(255, 255, 255, 0.6);
+            border: 1.5px solid var(--border-subtle);
+            border-radius: 12px;
+            padding: 12px 14px;
+            margin-top: 6px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.02);
+            position: relative;
+        }
+        .timeline-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .timeline-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--ocean-deep);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .timeline-legend {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 11px;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .legend-swatch {
+            width: 14px;
+            height: 10px;
+            border-radius: 3px;
+            display: inline-block;
+        }
+        .swatch-cont {
+            background: #0284c7;
+        }
+        .swatch-pulse {
+            background: repeating-linear-gradient(-45deg, #0284c7, #0284c7 3px, #e0f2fe 3px, #e0f2fe 6px);
+            border: 1px solid rgba(2, 132, 199, 0.4);
+        }
+        .swatch-off {
+            background: rgba(148, 163, 184, 0.25);
+            border: 1px solid rgba(148, 163, 184, 0.35);
+        }
+        
+        .timeline-body {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            position: relative;
+        }
+        .timeline-ruler {
+            display: flex;
+            align-items: center;
+            margin-bottom: 2px;
+        }
+        .timeline-ruler-spacer {
+            width: 122px;
+            flex-shrink: 0;
+        }
+        @media (max-width: 600px) {
+            .timeline-ruler-spacer {
+                width: 82px;
+            }
+        }
+        .timeline-ruler-ticks {
+            flex: 1;
+            display: flex;
+            justify-content: space-between;
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', Consolas, monospace;
+            padding: 0 2px;
+        }
+        
+        .timeline-track-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            position: relative;
+        }
+        .timeline-relay-label {
+            width: 122px;
+            flex-shrink: 0;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-primary);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        @media (max-width: 600px) {
+            .timeline-relay-label {
+                width: 82px;
+                font-size: 10px;
+            }
+        }
+        .timeline-bar-grid {
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(24, 1fr);
+            gap: 2px;
+            height: 18px;
+            background: rgba(0, 0, 0, 0.05);
+            padding: 2px;
+            border-radius: 6px;
+            border: 1px solid var(--border-subtle);
+        }
+        .timeline-hour-slot {
+            border-radius: 2px;
+            height: 100%;
+            cursor: pointer;
+            transition: transform 0.15s, opacity 0.15s;
+            position: relative;
+        }
+        .timeline-hour-slot:hover {
+            transform: scaleY(1.3);
+            z-index: 10;
+        }
+        
+        .slot-off {
+            background: rgba(255, 255, 255, 0.45);
+        }
+        .slot-cont-1 {
+            background: linear-gradient(180deg, #fbbf24, #d97706);
+        }
+        .slot-cont-2 {
+            background: linear-gradient(180deg, #34d399, #059669);
+        }
+        .slot-cont-3 {
+            background: linear-gradient(180deg, #38bdf8, #0284c7);
+        }
+        .slot-cont-4 {
+            background: linear-gradient(180deg, #c084fc, #7c3aed);
+        }
+        
+        .slot-pulse-1 {
+            background: repeating-linear-gradient(-45deg, #d97706, #d97706 3px, #fef3c7 3px, #fef3c7 6px);
+            border: 1px solid #d97706;
+        }
+        .slot-pulse-2 {
+            background: repeating-linear-gradient(-45deg, #059669, #059669 3px, #d1fae5 3px, #d1fae5 6px);
+            border: 1px solid #059669;
+        }
+        .slot-pulse-3 {
+            background: repeating-linear-gradient(-45deg, #0284c7, #0284c7 3px, #e0f2fe 3px, #e0f2fe 6px);
+            border: 1px solid #0284c7;
+        }
+        .slot-pulse-4 {
+            background: repeating-linear-gradient(-45deg, #7c3aed, #7c3aed 3px, #f3e8ff 3px, #f3e8ff 6px);
+            border: 1px solid #7c3aed;
+        }
+        
+        .timeline-now-line {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #ef4444;
+            box-shadow: 0 0 6px #ef4444;
+            pointer-events: none;
+            z-index: 5;
+            transition: left 0.5s ease;
+        }
+        .timeline-now-pin {
+            position: absolute;
+            top: -18px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #ef4444;
+            color: white;
+            font-size: 9px;
+            font-weight: 800;
+            padding: 1px 5px;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            white-space: nowrap;
+        }
+
         /* Feed Mode Banner */
         .feed-banner {
             display: none;
-            background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(245, 158, 11, 0.05));
-            border: 1px solid rgba(245, 158, 11, 0.4);
-            border-radius: 12px;
+            background: linear-gradient(135deg, rgba(254, 243, 199, 0.95), rgba(253, 230, 138, 0.9));
+            border: 1.5px solid #f59e0b;
+            border-radius: 14px;
             padding: 12px 16px;
             align-items: center;
             justify-content: space-between;
             gap: 12px;
+            box-shadow: 0 4px 14px rgba(245, 158, 11, 0.25);
             animation: pulse-orange 2.5s infinite;
         }
         .feed-banner.show {
@@ -219,19 +529,20 @@ const char DASHBOARD_HTML[] PROGMEM = R"rawhtml(
         }
         .feed-text {
             font-size: 13px;
-            font-weight: 600;
-            color: #fde68a;
+            font-weight: 700;
+            color: #92400e;
         }
         
         /* Relays List */
         .relay-item {
-            background: var(--bg-card);
-            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.78);
+            border-radius: 12px;
             padding: 12px 14px;
-            border: 1px solid var(--border-color);
+            border: 1.5px solid var(--border-color);
             display: flex;
             flex-direction: column;
             gap: 8px;
+            box-shadow: 0 2px 8px rgba(2, 132, 199, 0.06);
         }
         
         .relay-header {
@@ -249,11 +560,11 @@ const char DASHBOARD_HTML[] PROGMEM = R"rawhtml(
         .relay-gpio-tag {
             font-family: 'JetBrains Mono', Consolas, monospace;
             font-size: 11px;
-            color: var(--text-secondary);
-            background: rgba(255, 255, 255, 0.05);
+            color: var(--ocean-deep);
+            background: rgba(2, 132, 199, 0.1);
             padding: 2px 6px;
             border-radius: 4px;
-            font-weight: 500;
+            font-weight: 600;
         }
         
         .relay-status-banner {
@@ -264,31 +575,31 @@ const char DASHBOARD_HTML[] PROGMEM = R"rawhtml(
             border-radius: 8px;
             font-size: 12px;
             font-weight: 600;
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid var(--border-color);
+            background: rgba(255, 255, 255, 0.85);
+            border: 1px solid var(--border-subtle);
             line-height: 1.4;
             letter-spacing: 0.2px;
         }
         .relay-status-banner.status-active {
-            background: rgba(16, 185, 129, 0.1);
-            border-color: rgba(16, 185, 129, 0.3);
-            color: #34d399;
+            background: #ecfdf5;
+            border-color: #a7f3d0;
+            color: #065f46;
         }
         .relay-status-banner.status-paused {
-            background: rgba(245, 158, 11, 0.12);
-            border-color: rgba(245, 158, 11, 0.35);
-            color: #fbbf24;
+            background: #fffbeb;
+            border-color: #fde68a;
+            color: #92400e;
             animation: pulse-orange 3s infinite;
         }
         .relay-status-banner.status-idle {
-            background: rgba(148, 163, 184, 0.06);
-            border-color: rgba(148, 163, 184, 0.18);
-            color: var(--text-secondary);
+            background: #f8fafc;
+            border-color: #e2e8f0;
+            color: #475569;
         }
         .relay-status-banner.status-warn {
-            background: rgba(239, 68, 68, 0.12);
-            border-color: rgba(239, 68, 68, 0.35);
-            color: #f87171;
+            background: #fef2f2;
+            border-color: #fecaca;
+            color: #991b1b;
         }
         
         .relay-action-badges {
@@ -326,69 +637,67 @@ const char DASHBOARD_HTML[] PROGMEM = R"rawhtml(
 
         /* AUTO badge button */
         .btn-badge-auto.active {
-            background: rgba(16, 185, 129, 0.18);
-            color: #34d399;
-            border-color: rgba(16, 185, 129, 0.45);
-            box-shadow: 0 0 10px rgba(16, 185, 129, 0.25);
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: #ffffff;
+            box-shadow: 0 2px 6px rgba(16, 185, 129, 0.35);
         }
 
         .btn-badge-auto.inactive {
-            background: rgba(255, 255, 255, 0.04);
-            color: var(--text-secondary);
-            border-color: var(--border-color);
-            opacity: 0.65;
+            background: rgba(0, 0, 0, 0.06);
+            color: #64748b;
+            border-color: rgba(0, 0, 0, 0.1);
+            opacity: 0.8;
         }
 
         .btn-badge-auto.inactive:hover {
             opacity: 1;
-            background: rgba(255, 255, 255, 0.08);
+            background: rgba(0, 0, 0, 0.1);
             color: var(--text-primary);
         }
 
         /* POWER badge button */
         .btn-badge-power.neutral {
-            background: rgba(255, 255, 255, 0.04);
-            color: var(--text-secondary);
-            border-color: var(--border-color);
-            opacity: 0.65;
+            background: rgba(0, 0, 0, 0.06);
+            color: #64748b;
+            border-color: rgba(0, 0, 0, 0.1);
+            opacity: 0.8;
         }
 
         .btn-badge-power.neutral:hover {
             opacity: 1;
-            background: rgba(255, 255, 255, 0.08);
+            background: rgba(0, 0, 0, 0.1);
             color: var(--text-primary);
         }
 
         .btn-badge-power.forced-on {
             background: linear-gradient(135deg, #10b981, #059669);
             color: #ffffff;
-            border-color: #34d399;
-            box-shadow: 0 0 12px rgba(16, 185, 129, 0.45);
+            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);
         }
 
         .btn-badge-power.forced-off {
             background: linear-gradient(135deg, #ef4444, #dc2626);
             color: #ffffff;
-            border-color: #f87171;
-            box-shadow: 0 0 12px rgba(239, 68, 68, 0.45);
+            box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
         }
         
         .btn {
-            background: linear-gradient(135deg, #38bdf8, #2563eb);
+            background: linear-gradient(135deg, #0ea5e9, #0284c7);
             color: white;
             border: none;
             padding: 8px 14px;
             border-radius: 8px;
             font-family: inherit;
-            font-weight: 600;
+            font-weight: 700;
             cursor: pointer;
             transition: all 0.2s;
             font-size: 13px;
+            box-shadow: 0 2px 6px rgba(2, 132, 199, 0.25);
         }
         
         .btn:hover {
-            opacity: 0.92;
-            box-shadow: 0 0 10px rgba(56, 189, 248, 0.35);
+            opacity: 0.95;
+            box-shadow: 0 4px 12px rgba(2, 132, 199, 0.35);
             transform: translateY(-1px);
         }
         
@@ -397,23 +706,25 @@ const char DASHBOARD_HTML[] PROGMEM = R"rawhtml(
         }
         
         .btn-secondary {
-            background: rgba(255,255,255,0.08);
+            background: rgba(255, 255, 255, 0.8);
             color: var(--text-primary);
-            border: 1px solid var(--border-color);
-        }
-        
-        .btn-secondary:hover {
-            background: rgba(255,255,255,0.14);
+            border: 1px solid var(--border-subtle);
             box-shadow: none;
         }
         
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+        }
+        
         .btn-danger {
-            background: linear-gradient(135deg, #ef4444, #b91c1c);
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
         }
         
         .btn-warning {
             background: linear-gradient(135deg, #f59e0b, #d97706);
-            color: #111827;
+            color: white;
         }
         
         .btn-sm {
@@ -430,8 +741,49 @@ const char DASHBOARD_HTML[] PROGMEM = R"rawhtml(
             text-transform: uppercase;
         }
         
-        .badge-auto { background: rgba(56, 189, 248, 0.15); color: var(--accent-primary); border: 1px solid rgba(56, 189, 248, 0.3); }
-        .badge-manual { background: rgba(245, 158, 11, 0.15); color: var(--state-warn); border: 1px solid rgba(245, 158, 11, 0.3); }
+        .badge-auto { background: rgba(2, 132, 199, 0.12); color: var(--ocean-deep); border: 1px solid rgba(2, 132, 199, 0.25); }
+        
+        /* Relay Tabs Selector */
+        .relay-tabs-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-top: 8px;
+            margin-bottom: 12px;
+        }
+        @media (max-width: 600px) {
+            .relay-tabs-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        .btn-relay-tab {
+            padding: 9px 8px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.65);
+            border: 1.5px solid var(--border-subtle);
+            color: var(--text-primary);
+            font-weight: 700;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .btn-relay-tab:hover {
+            background: rgba(255, 255, 255, 0.9);
+            border-color: var(--ocean-blue);
+        }
+        .btn-relay-tab.active {
+            background: linear-gradient(135deg, #0284c7, #0369a1);
+            color: white;
+            border-color: #38bdf8;
+            box-shadow: 0 4px 12px rgba(2, 132, 199, 0.35);
+        }
 
         /* 24-hour visual grid */
         .hour-grid {
@@ -440,7 +792,6 @@ const char DASHBOARD_HTML[] PROGMEM = R"rawhtml(
             gap: 6px;
             margin-top: 8px;
         }
-        
         @media(max-width: 550px) {
             .hour-grid {
                 grid-template-columns: repeat(6, 1fr);
@@ -448,27 +799,29 @@ const char DASHBOARD_HTML[] PROGMEM = R"rawhtml(
         }
         
         .hour-cell {
-            background-color: var(--bg-card);
-            border: 1px solid var(--border-color);
+            background-color: rgba(255, 255, 255, 0.75);
+            border: 1.5px solid var(--border-subtle);
             padding: 8px 4px;
-            border-radius: 6px;
-            font-size: 11px;
+            border-radius: 8px;
+            font-size: 12px;
             font-weight: 700;
             text-align: center;
             cursor: pointer;
             transition: all 0.15s;
             user-select: none;
+            color: #334155;
         }
         
         .hour-cell:hover {
-            border-color: var(--accent-primary);
+            border-color: var(--ocean-blue);
+            transform: translateY(-1px);
         }
         
         .hour-cell.active {
-            background-color: var(--accent-primary);
-            color: #0b0f19;
-            box-shadow: 0 0 8px var(--accent-primary-glow);
-            border-color: var(--accent-primary);
+            background: linear-gradient(135deg, #0284c7, #0369a1);
+            color: white;
+            border-color: #38bdf8;
+            box-shadow: 0 2px 8px rgba(2, 132, 199, 0.4);
         }
         
         /* Form controls */
@@ -480,32 +833,34 @@ const char DASHBOARD_HTML[] PROGMEM = R"rawhtml(
         
         label {
             font-size: 11px;
-            color: var(--text-secondary);
+            color: var(--ocean-deep);
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
         
         input[type="number"], input[type="text"], input[type="password"], select {
-            background-color: var(--bg-card);
-            border: 1px solid var(--border-color);
+            background-color: rgba(255, 255, 255, 0.85);
+            border: 1.5px solid var(--border-subtle);
             padding: 9px 12px;
             border-radius: 8px;
-            color: white;
+            color: var(--text-primary);
             font-family: inherit;
             font-size: 13px;
+            font-weight: 600;
             outline: none;
-            transition: border-color 0.2s;
+            transition: border-color 0.2s, box-shadow 0.2s;
             width: 100%;
         }
         
         select option {
-            background-color: var(--bg-card);
-            color: white;
+            background-color: #ffffff;
+            color: var(--text-primary);
         }
         
         input:focus, select:focus {
-            border-color: var(--accent-primary);
+            border-color: var(--ocean-blue);
+            box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
         }
         
         .pulse-input-pair {
@@ -522,7 +877,7 @@ const char DASHBOARD_HTML[] PROGMEM = R"rawhtml(
             color: var(--text-secondary);
         }
 
-        /* Timeline Container & Items */
+        /* Timeline Container & Items (Event History) */
         .timeline-container {
             max-height: 250px;
             overflow-y: auto;
@@ -539,7 +894,7 @@ const char DASHBOARD_HTML[] PROGMEM = R"rawhtml(
             height: 6px;
         }
         .timeline-container::-webkit-scrollbar-thumb {
-            background: var(--border-color);
+            background: rgba(2, 132, 199, 0.25);
             border-radius: 4px;
         }
         
@@ -548,23 +903,24 @@ const char DASHBOARD_HTML[] PROGMEM = R"rawhtml(
             align-items: flex-start;
             gap: 8px;
             padding: 8px 10px;
-            background: rgba(255, 255, 255, 0.02);
-            border-left: 3px solid var(--accent-primary);
+            background: rgba(255, 255, 255, 0.65);
+            border-left: 3px solid var(--ocean-blue);
             border-radius: 6px;
             font-size: 12px;
             line-height: 1.4;
             min-width: 0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
         }
         
         .timeline-time {
             font-family: 'JetBrains Mono', Consolas, monospace;
             font-size: 11px;
-            color: var(--accent-primary);
-            background: rgba(56, 189, 248, 0.12);
+            color: var(--ocean-deep);
+            background: rgba(2, 132, 199, 0.1);
             padding: 2px 6px;
             border-radius: 4px;
             flex-shrink: 0;
-            font-weight: 600;
+            font-weight: 700;
             white-space: nowrap;
         }
         
@@ -573,6 +929,7 @@ const char DASHBOARD_HTML[] PROGMEM = R"rawhtml(
             word-break: break-word;
             flex-grow: 1;
             min-width: 0;
+            font-weight: 500;
         }
         
         /* Modals */
@@ -580,8 +937,9 @@ const char DASHBOARD_HTML[] PROGMEM = R"rawhtml(
             display: none;
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(11, 15, 25, 0.85);
-            backdrop-filter: blur(8px);
+            background: rgba(7, 89, 133, 0.45);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
             z-index: 2000;
             justify-content: center;
             align-items: center;
@@ -591,13 +949,15 @@ const char DASHBOARD_HTML[] PROGMEM = R"rawhtml(
             display: flex;
         }
         .modal-content {
-            background: linear-gradient(135deg, var(--bg-surface), var(--bg-card));
-            border-radius: 14px;
-            border: 1px solid var(--border-color);
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 16px;
+            border: 1.5px solid var(--border-color);
             padding: 22px;
             max-width: 440px;
             width: 100%;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+            box-shadow: 0 15px 35px rgba(2, 132, 199, 0.25);
             display: flex;
             flex-direction: column;
             gap: 14px;
@@ -608,13 +968,13 @@ const char DASHBOARD_HTML[] PROGMEM = R"rawhtml(
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 1px solid var(--border-color);
+            border-bottom: 1.5px solid var(--border-subtle);
             padding-bottom: 8px;
         }
         .modal-header h2 {
             font-size: 17px;
             font-weight: 700;
-            color: var(--accent-primary);
+            color: var(--ocean-deep);
         }
         .close-btn {
             font-size: 24px;
@@ -631,11 +991,12 @@ const char DASHBOARD_HTML[] PROGMEM = R"rawhtml(
             bottom: 20px;
             left: 50%;
             transform: translateX(-50%) translateY(100px);
-            background-color: #1e2942;
-            border: 1px solid var(--accent-primary);
+            background-color: rgba(15, 23, 42, 0.92);
+            color: #ffffff;
+            border: 1px solid #38bdf8;
             padding: 10px 20px;
-            border-radius: 8px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
             transition: transform 0.3s ease;
             z-index: 3000;
             font-weight: 600;
@@ -648,8 +1009,10 @@ const char DASHBOARD_HTML[] PROGMEM = R"rawhtml(
         footer {
             text-align: center;
             font-size: 12px;
-            color: var(--text-secondary);
+            color: rgba(255, 255, 255, 0.9);
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
             padding: 12px 0 20px;
+            font-weight: 600;
         }
     </style>
 </head>
@@ -657,9 +1020,15 @@ const char DASHBOARD_HTML[] PROGMEM = R"rawhtml(
     <div class="container">
         <!-- Header -->
         <header>
-            <div>
-                <h1>Aquatlantis</h1>
-                <p style="font-size: 12px; color: var(--text-secondary)">Smart Controller • BioBox 56L</p>
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <span style="font-size: 28px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15));">🐠</span>
+                <div>
+                    <h1>Aquatlantis</h1>
+                    <p style="font-size: 12px; color: var(--text-secondary); font-weight: 600;">Smart Controller • BioBox 56L</p>
+                </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 20px;" title="Tropical Aquarium">🫧 ⚓</span>
             </div>
         </header>
 
@@ -706,6 +1075,44 @@ const char DASHBOARD_HTML[] PROGMEM = R"rawhtml(
                     <span class="stat-val" id="ip-val">192.168.1.32</span>
                 </div>
             </div>
+
+            <!-- 24-Hour Multi-Relay Timeline Component (Infographic) -->
+            <div class="timeline-card">
+                <div class="timeline-header">
+                    <div class="timeline-title">
+                        <span>⏱️ 24h Relay Operation Timeline</span>
+                    </div>
+                    <div class="timeline-legend">
+                        <span class="legend-item"><span class="legend-swatch swatch-cont"></span> Continuous</span>
+                        <span class="legend-item"><span class="legend-swatch swatch-pulse"></span> Pulse (Hatched)</span>
+                        <span class="legend-item"><span class="legend-swatch swatch-off"></span> Off</span>
+                    </div>
+                </div>
+                <div class="timeline-body">
+                    <div class="timeline-ruler">
+                        <div class="timeline-ruler-spacer"></div>
+                        <div class="timeline-ruler-ticks">
+                            <span>00</span>
+                            <span>03</span>
+                            <span>06</span>
+                            <span>09</span>
+                            <span>12</span>
+                            <span>15</span>
+                            <span>18</span>
+                            <span>21</span>
+                            <span>23</span>
+                        </div>
+                    </div>
+                    <div style="position: relative;">
+                        <div id="timeline-tracks" style="display: flex; flex-direction: column; gap: 6px;">
+                            <!-- Populated dynamically via renderTimeline() -->
+                        </div>
+                        <div id="timeline-now-cursor" class="timeline-now-line" style="display: none;">
+                            <div class="timeline-now-pin" id="timeline-now-pin">11:38</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- 2. PERIPHERAL STATUS & CONTROL -->
@@ -726,12 +1133,13 @@ const char DASHBOARD_HTML[] PROGMEM = R"rawhtml(
         <div class="card">
             <div class="card-header">
                 <div class="card-title">3. Schedule Configuration (24h)</div>
-                <select id="relay-select" style="width: auto; padding: 6px 10px;" onchange="onRelaySelected(this.value)">
-                    <option value="1">Relay 1</option>
-                    <option value="2">Relay 2</option>
-                    <option value="3">Relay 3</option>
-                    <option value="4">Relay 4</option>
-                </select>
+            </div>
+            
+            <div class="relay-tabs-grid" id="relay-tabs">
+                <button type="button" class="btn-relay-tab active" data-relay="1" onclick="selectRelayTab(1)">🐟 1. Main Light</button>
+                <button type="button" class="btn-relay-tab" data-relay="2" onclick="selectRelayTab(2)">🦐 2. CO2 Solenoid</button>
+                <button type="button" class="btn-relay-tab" data-relay="3" onclick="selectRelayTab(3)">🫧 3. Air Pump</button>
+                <button type="button" class="btn-relay-tab" data-relay="4" onclick="selectRelayTab(4)">🐚 4. Ambient Light</button>
             </div>
             
             <div style="display: flex; flex-direction: column; gap: 6px;">
@@ -744,7 +1152,7 @@ const char DASHBOARD_HTML[] PROGMEM = R"rawhtml(
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin-top: 6px;">
                 <div class="form-group">
                     <label for="relay-behavior">Mode during active hours</label>
-                    <select id="relay-behavior" onchange="onBehaviorChanged(this.value)">
+                    <select id="relay-behavior" onchange="onBehaviorChanged(this.value); markScheduleModified();">
                         <option value="0">Continuous (active throughout checked hours)</option>
                         <option value="1">Pulse / Intermittent (repeating ON / OFF cycles)</option>
                     </select>
@@ -754,18 +1162,18 @@ const char DASHBOARD_HTML[] PROGMEM = R"rawhtml(
                     <div class="form-group">
                         <label>Pulse ON (Running Time)</label>
                         <div class="pulse-input-pair">
-                            <input type="number" id="pulse-on-min" min="0" max="60" value="1">
+                            <input type="number" id="pulse-on-min" min="0" max="60" value="1" oninput="markScheduleModified()">
                             <span>m</span>
-                            <input type="number" id="pulse-on-sec" min="0" max="59" value="0">
+                            <input type="number" id="pulse-on-sec" min="0" max="59" value="0" oninput="markScheduleModified()">
                             <span>s</span>
                         </div>
                     </div>
                     <div class="form-group">
                         <label>Pause OFF (Rest Time)</label>
                         <div class="pulse-input-pair">
-                            <input type="number" id="pulse-off-min" min="0" max="120" value="2">
+                            <input type="number" id="pulse-off-min" min="0" max="120" value="2" oninput="markScheduleModified()">
                             <span>m</span>
-                            <input type="number" id="pulse-off-sec" min="0" max="59" value="0">
+                            <input type="number" id="pulse-off-sec" min="0" max="59" value="0" oninput="markScheduleModified()">
                             <span>s</span>
                         </div>
                     </div>
@@ -775,16 +1183,17 @@ const char DASHBOARD_HTML[] PROGMEM = R"rawhtml(
             <button class="btn" style="margin-top: 4px;" onclick="saveRelaySchedule()">💾 Save Relay Schedule</button>
 
             <!-- Presets Management -->
-            <div style="border-top: 1px solid var(--border-color); padding-top: 14px; margin-top: 10px; display: flex; flex-direction: column; gap: 10px;">
+            <div style="border-top: 1.5px solid var(--border-subtle); padding-top: 14px; margin-top: 10px; display: flex; flex-direction: column; gap: 10px;">
                 <label>Schedule Presets</label>
                 <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
                     <select id="preset-select" style="flex: 1; min-width: 200px;" onchange="onPresetSelected(this.value)">
                         <!-- Populated dynamically via API -->
                     </select>
                     <button class="btn btn-sm" onclick="applyPreset()">Apply</button>
+                    <button class="btn btn-sm btn-warning" id="btn-overwrite-preset" style="display: none;" onclick="overwriteCurrentPreset()">🔄 Overwrite Preset</button>
                     <button class="btn btn-sm btn-secondary" onclick="openSavePresetModal()">Save Preset</button>
                     <button class="btn btn-sm btn-danger" id="btn-delete-preset" style="display: none;" onclick="deletePreset()">Delete</button>
-                    <button class="btn btn-sm btn-secondary" style="color: #f87171;" onclick="resetToDefaults()">Factory Reset</button>
+                    <button class="btn btn-sm btn-secondary" style="color: #ef4444;" onclick="resetToDefaults()">Factory Reset</button>
                 </div>
             </div>
         </div>
@@ -895,18 +1304,24 @@ const char DASHBOARD_HTML[] PROGMEM = R"rawhtml(
             </div>
         </div>
 
-        <!-- Modal Save New Preset -->
+        <!-- Modal Save / Overwrite Preset -->
         <div id="save-preset-modal" class="modal">
-            <div class="modal-content" style="max-width: 360px;">
+            <div class="modal-content" style="max-width: 380px;">
                 <div class="modal-header">
-                    <h2>Save New Preset</h2>
+                    <h2 id="save-preset-modal-title">Save Schedule Preset</h2>
                     <span class="close-btn" onclick="closeSavePresetModal()">&times;</span>
                 </div>
-                <div class="form-group">
+                <div class="form-group" style="margin-top: 10px;">
                     <label for="new-preset-name">Preset Name</label>
-                    <input type="text" id="new-preset-name" placeholder="e.g. Summer Schedule, Maintenance..." maxlength="31">
+                    <input type="text" id="new-preset-name" placeholder="e.g. Summer Schedule, Maintenance..." maxlength="31" oninput="onPresetNameInput(this.value)">
                 </div>
-                <button class="btn" onclick="confirmSavePreset()">Save Preset</button>
+                <div id="preset-overwrite-hint" style="display: none; font-size: 12px; color: #b45309; background: #fef3c7; border: 1px solid #fde68a; padding: 8px 10px; border-radius: 8px;">
+                    ⚠️ Preset exists and will be <strong>overwritten</strong>.
+                </div>
+                <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 6px;">
+                    <button class="btn btn-sm btn-secondary" onclick="closeSavePresetModal()">Cancel</button>
+                    <button class="btn btn-sm" id="btn-confirm-save-preset" onclick="confirmSavePreset()">Save Preset</button>
+                </div>
             </div>
         </div>
 
@@ -934,6 +1349,31 @@ const char DASHBOARD_HTML[] PROGMEM = R"rawhtml(
         </footer>
     </div>
 
+    <!-- Floating animated bubbles and aquatic life background layer -->
+    <div class="bubbles-layer" aria-hidden="true">
+        <div class="bubble" style="width: 14px; height: 14px; left: 8%; animation-duration: 18s; animation-delay: 0s;"></div>
+        <div class="bubble" style="width: 24px; height: 24px; left: 18%; animation-duration: 22s; animation-delay: 3s;"></div>
+        <div class="bubble" style="width: 10px; height: 10px; left: 32%; animation-duration: 15s; animation-delay: 1s;"></div>
+        <div class="bubble" style="width: 20px; height: 20px; left: 45%; animation-duration: 20s; animation-delay: 5s;"></div>
+        <div class="bubble" style="width: 16px; height: 16px; left: 62%; animation-duration: 17s; animation-delay: 2s;"></div>
+        <div class="bubble" style="width: 26px; height: 26px; left: 78%; animation-duration: 25s; animation-delay: 4s;"></div>
+        <div class="bubble" style="width: 12px; height: 12px; left: 91%; animation-duration: 16s; animation-delay: 6s;"></div>
+    </div>
+    
+    <!-- Swimming decorative fish -->
+    <div class="fish-decor fish-1" aria-hidden="true">🐠</div>
+    <div class="fish-decor fish-2" aria-hidden="true">🐟</div>
+    <div class="fish-decor fish-3" aria-hidden="true">🐡</div>
+
+    <!-- Sandy seabed footer decoration -->
+    <div class="seabed-decor" aria-hidden="true">
+        <span>🪸 🌿</span>
+        <span>🦐</span>
+        <span>🪙 🌟</span>
+        <span>🐚 🪸</span>
+        <span>⚓</span>
+    </div>
+
     <div class="toast" id="toast">Notification</div>
 
     <script>
@@ -941,6 +1381,10 @@ const char DASHBOARD_HTML[] PROGMEM = R"rawhtml(
         let presetsList = [];
         let currentNames = null;
         let activePresetId = 1;
+        let basePresetId = 1;
+        let basePresetName = "";
+        let selectedRelayNum = 1;
+        let isScheduleDirty = false;
 
         function showToast(msg) {
             const t = document.getElementById('toast');
@@ -957,10 +1401,75 @@ const char DASHBOARD_HTML[] PROGMEM = R"rawhtml(
             return `${h}h ${m}m ${s}s`;
         }
 
+        async function selectRelayTab(num) {
+            if (isScheduleDirty) {
+                await saveActiveRelayScheduleSilently();
+            }
+            selectedRelayNum = parseInt(num);
+            document.querySelectorAll('.btn-relay-tab').forEach(btn => {
+                if (btn.dataset.relay == num) btn.classList.add('active');
+                else btn.classList.remove('active');
+            });
+            onRelaySelected(num);
+        }
+
+        async function saveActiveRelayScheduleSilently() {
+            const relayNum = selectedRelayNum;
+            const behavior = parseInt(document.getElementById('relay-behavior').value);
+            const onMin = parseInt(document.getElementById('pulse-on-min').value) || 0;
+            const onSecPart = parseInt(document.getElementById('pulse-on-sec').value) || 0;
+            const offMin = parseInt(document.getElementById('pulse-off-min').value) || 0;
+            const offSecPart = parseInt(document.getElementById('pulse-off-sec').value) || 0;
+            const pulseOn = Math.max(1, onMin * 60 + onSecPart);
+            const pulseOff = Math.max(1, offMin * 60 + offSecPart);
+
+            let bitmap = 0;
+            const cells = document.querySelectorAll('.hour-cell');
+            cells.forEach(cell => {
+                if (cell.classList.contains('active')) {
+                    const hr = parseInt(cell.dataset.hour);
+                    bitmap |= (1 << hr);
+                }
+            });
+
+            try {
+                await fetch('/api/schedule', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: `relay=${relayNum}&active_hours=${bitmap}&behavior=${behavior}&pulse_on=${pulseOn}&pulse_off=${pulseOff}`
+                });
+                const s = schedules.find(x => x.num == relayNum);
+                if (s) {
+                    s.active_hours = bitmap;
+                    s.behavior = behavior;
+                    s.pulse_on = pulseOn;
+                    s.pulse_off = pulseOff;
+                }
+                isScheduleDirty = false;
+                renderTimeline();
+            } catch (err) {
+                console.error("Silent schedule commit error:", err);
+            }
+        }
+
         function markScheduleModified() {
+            isScheduleDirty = true;
             if (activePresetId !== 0) {
                 activePresetId = 0;
                 fetchPresets();
+            }
+            const sched = schedules.find(s => s.num == selectedRelayNum);
+            if (sched) {
+                let bitmap = 0;
+                const cells = document.querySelectorAll('.hour-cell');
+                cells.forEach(cell => {
+                    if (cell.classList.contains('active')) {
+                        const hr = parseInt(cell.dataset.hour);
+                        bitmap |= (1 << hr);
+                    }
+                });
+                sched.active_hours = bitmap;
+                renderTimeline();
             }
         }
 
@@ -1049,12 +1558,120 @@ const char DASHBOARD_HTML[] PROGMEM = R"rawhtml(
             try {
                 const res = await fetch('/api/schedule');
                 schedules = await res.json();
-                const currentRelay = document.getElementById('relay-select').value;
-                onRelaySelected(currentRelay);
+                onRelaySelected(selectedRelayNum);
+                renderTimeline();
             } catch (err) {
                 console.error("Error fetching schedules:", err);
             }
         }
+
+        function renderTimeline() {
+            const container = document.getElementById('timeline-tracks');
+            if (!container || !schedules || schedules.length === 0) return;
+            container.innerHTML = '';
+
+            const defaultNames = ["Illuminat Principal", "Electrovalva CO2", "Pompa de Aer", "Liber"];
+            const relayIcons = ["🐟", "🦐", "🫧", "🐚"];
+
+            for (let i = 0; i < 4; i++) {
+                const relayNum = i + 1;
+                const sched = schedules.find(s => s.num == relayNum) || { active_hours: 0, behavior: 0, pulse_on: 60, pulse_off: 120 };
+                const customName = (currentNames && currentNames.relays && currentNames.relays[i]) ? currentNames.relays[i] : defaultNames[i];
+                
+                const trackRow = document.createElement('div');
+                trackRow.className = 'timeline-track-row';
+
+                const label = document.createElement('div');
+                label.className = 'timeline-relay-label';
+                label.title = `${customName} (Click to switch tab)`;
+                label.innerHTML = `<span>${relayIcons[i]}</span><span style="overflow:hidden;text-overflow:ellipsis;">${customName}</span>`;
+                label.style.cursor = 'pointer';
+                label.onclick = () => selectRelayTab(relayNum);
+
+                const barGrid = document.createElement('div');
+                barGrid.className = 'timeline-bar-grid';
+
+                for (let h = 0; h < 24; h++) {
+                    const slot = document.createElement('div');
+                    slot.className = 'timeline-hour-slot';
+                    const isActive = (sched.active_hours & (1 << h)) !== 0;
+
+                    if (isActive) {
+                        if (sched.behavior == 1) {
+                            slot.classList.add(`slot-pulse-${relayNum}`);
+                            const onM = Math.floor(sched.pulse_on / 60);
+                            const onS = sched.pulse_on % 60;
+                            const offM = Math.floor(sched.pulse_off / 60);
+                            const offS = sched.pulse_off % 60;
+                            const onStr = onM > 0 ? (onS > 0 ? `${onM}m${onS}s` : `${onM}m`) : `${onS}s`;
+                            const offStr = offM > 0 ? (offS > 0 ? `${offM}m${offS}s` : `${offM}m`) : `${offS}s`;
+                            slot.title = `${customName} • Hour ${h.toString().padStart(2, '0')}:00\nPulse Mode: ${onStr} ON / ${offStr} OFF`;
+                        } else {
+                            slot.classList.add(`slot-cont-${relayNum}`);
+                            slot.title = `${customName} • Hour ${h.toString().padStart(2, '0')}:00\nContinuous Active`;
+                        }
+                    } else {
+                        slot.classList.add('slot-off');
+                        slot.title = `${customName} • Hour ${h.toString().padStart(2, '0')}:00\nInactive (OFF)`;
+                    }
+
+                    // Clicking any slot selects the relay and toggles that hour in the grid
+                    slot.onclick = async () => {
+                        if (selectedRelayNum !== relayNum) {
+                            await selectRelayTab(relayNum);
+                        }
+                        const cell = document.querySelector(`.hour-cell[data-hour="${h}"]`);
+                        if (cell) {
+                            cell.click();
+                        }
+                    };
+
+                    barGrid.appendChild(slot);
+                }
+
+                trackRow.appendChild(label);
+                trackRow.appendChild(barGrid);
+                container.appendChild(trackRow);
+            }
+
+            const timeStr = document.getElementById('time-val')?.innerText;
+            if (timeStr) updateTimelineNowCursor(timeStr);
+        }
+
+        function updateTimelineNowCursor(timeStr) {
+            const cursor = document.getElementById('timeline-now-cursor');
+            const pin = document.getElementById('timeline-now-pin');
+            if (!cursor || !pin || !timeStr || timeStr === '00:00:00' || timeStr === '-') return;
+
+            const firstGrid = document.querySelector('.timeline-bar-grid');
+            if (!firstGrid) {
+                cursor.style.display = 'none';
+                return;
+            }
+
+            const parts = timeStr.split(':');
+            if (parts.length < 2) return;
+            const hr = parseInt(parts[0], 10);
+            const min = parseInt(parts[1], 10);
+            const sec = parts[2] ? parseInt(parts[2], 10) : 0;
+            if (isNaN(hr) || isNaN(min)) return;
+
+            const totalSec = hr * 3600 + min * 60 + sec;
+            const pct = Math.min(1.0, Math.max(0.0, totalSec / 86400));
+
+            const gridLeft = firstGrid.offsetLeft;
+            const gridWidth = firstGrid.offsetWidth;
+            const leftPx = gridLeft + pct * gridWidth;
+
+            cursor.style.left = `${leftPx}px`;
+            cursor.style.display = 'block';
+            pin.innerText = `${hr.toString().padStart(2, '0')}:${min.toString().padStart(2, '0')}`;
+        }
+
+        window.addEventListener('resize', () => {
+            const timeStr = document.getElementById('time-val')?.innerText;
+            if (timeStr) updateTimelineNowCursor(timeStr);
+        });
 
         async function fetchPresets() {
             try {
@@ -1091,12 +1708,23 @@ const char DASHBOARD_HTML[] PROGMEM = R"rawhtml(
         function onPresetSelected(val) {
             const p = presetsList.find(x => x.id == val);
             const btnDel = document.getElementById('btn-delete-preset');
-            if (btnDel) {
-                if (p && !p.builtin) {
-                    btnDel.style.display = 'inline-block';
-                } else {
-                    btnDel.style.display = 'none';
+            const btnOverwrite = document.getElementById('btn-overwrite-preset');
+            
+            if (p && !p.builtin) {
+                basePresetId = p.id;
+                basePresetName = p.name;
+                if (btnDel) btnDel.style.display = 'inline-block';
+                if (btnOverwrite) {
+                    btnOverwrite.style.display = 'inline-block';
+                    btnOverwrite.innerText = `🔄 Overwrite "${p.name}"`;
                 }
+            } else {
+                if (p) {
+                    basePresetId = p.id;
+                    basePresetName = p.name;
+                }
+                if (btnDel) btnDel.style.display = 'none';
+                if (btnOverwrite) btnOverwrite.style.display = 'none';
             }
         }
 
@@ -1111,6 +1739,7 @@ const char DASHBOARD_HTML[] PROGMEM = R"rawhtml(
                     timeStr = timeStr.substring(timeStr.indexOf(' ') + 1);
                 }
                 document.getElementById('time-val').innerText = timeStr;
+                updateTimelineNowCursor(timeStr);
                 document.getElementById('uptime-val').innerText = formatUptime(data.uptime);
                 document.getElementById('ssid-val').innerText = data.wifi_ssid;
                 document.getElementById('rssi-val').innerText = data.wifi_rssi + ' dBm';
@@ -1124,8 +1753,8 @@ const char DASHBOARD_HTML[] PROGMEM = R"rawhtml(
                 const lightPctLbl = document.getElementById('light-percent-label');
                 if (lightPctLbl) lightPctLbl.innerText = data.light_percent + '%';
                 
-                // Track active preset
-                if (data.active_preset !== undefined && data.active_preset !== activePresetId) {
+                // Track active preset (only if user has no unsaved schedule modifications)
+                if (!isScheduleDirty && data.active_preset !== undefined && data.active_preset !== activePresetId) {
                     activePresetId = data.active_preset;
                     fetchPresets();
                 }
@@ -1153,7 +1782,7 @@ const char DASHBOARD_HTML[] PROGMEM = R"rawhtml(
                 updateInputDot('input-gpio2', data.inputs.gpio2);
                 updateInputDot('input-gpio15', data.inputs.gpio15);
 
-                // Update input custom labels
+                // Update input custom labels and relay tabs with aquatic icons
                 if (data.names) {
                     currentNames = data.names;
                     if (data.names.inputs) {
@@ -1166,14 +1795,14 @@ const char DASHBOARD_HTML[] PROGMEM = R"rawhtml(
                         const lblA0 = document.getElementById('lbl-analog');
                         if (lblA0) lblA0.innerText = data.names.analog;
                     }
-                    // Update relay selector options guarded against mobile picker flickering
-                    const sel = document.getElementById('relay-select');
-                    if (sel && document.activeElement !== sel && data.names.relays) {
+                    if (data.names.relays) {
+                        const relayIcons = ["🐟", "🦐", "🫧", "🐚"];
                         for (let i = 0; i < 4; i++) {
-                            if (sel.options[i] && data.names.relays[i]) {
-                                const expectedText = `Relay ${i + 1}: ${data.names.relays[i]}`;
-                                if (sel.options[i].text !== expectedText) {
-                                    sel.options[i].text = expectedText;
+                            const tab = document.querySelector(`.btn-relay-tab[data-relay="${i + 1}"]`);
+                            if (tab && data.names.relays[i]) {
+                                const expectedText = `${relayIcons[i]} ${i + 1}. ${data.names.relays[i]}`;
+                                if (tab.innerText !== expectedText) {
+                                    tab.innerText = expectedText;
                                 }
                             }
                         }
@@ -1188,7 +1817,7 @@ const char DASHBOARD_HTML[] PROGMEM = R"rawhtml(
                 if (data.wifi_status === 'Connected') wifiDot.classList.add('dot-green');
                 else wifiDot.classList.add('dot-red');
 
-                // Relays card rendering (Variant C: Two rows, compact interactive badges)
+                // Relays card rendering (Compact interactive badges + maritime helm icon)
                 const container = document.getElementById('relays-container');
                 container.innerHTML = '';
                 
@@ -1231,6 +1860,7 @@ const char DASHBOARD_HTML[] PROGMEM = R"rawhtml(
                             <div class="relay-action-badges">
                                 <button class="btn-badge ${autoClass}" onclick="setRelayAuto(${relay.num})" title="Switch to Automatic Schedule">AUTO</button>
                                 <button class="btn-badge ${powerClass}" onclick="toggleRelayPower(${relay.num}, ${relay.state ? 1 : 0}, ${relay.override ? 1 : 0})" title="Toggle Force ON / OFF">${powerLabel}</button>
+                                <span style="font-size: 15px; opacity: 0.85; margin-left: 2px;" title="Controller Managed">☸️</span>
                             </div>
                         </div>
                         <div class="relay-status-banner ${bannerClass}">
@@ -1297,7 +1927,7 @@ const char DASHBOARD_HTML[] PROGMEM = R"rawhtml(
         }
 
         async function saveRelaySchedule() {
-            const relayNum = document.getElementById('relay-select').value;
+            const relayNum = selectedRelayNum;
             const behavior = document.getElementById('relay-behavior').value;
             
             const onMin = parseInt(document.getElementById('pulse-on-min').value) || 0;
@@ -1324,8 +1954,11 @@ const char DASHBOARD_HTML[] PROGMEM = R"rawhtml(
                     body: `relay=${relayNum}&active_hours=${bitmap}&behavior=${behavior}&pulse_on=${pulseOn}&pulse_off=${pulseOff}`
                 });
                 if (res.ok) {
+                    isScheduleDirty = false;
+                    activePresetId = 0;
                     showToast(`Relay ${relayNum} schedule saved and confirmed!`);
                     await fetchSchedules();
+                    await fetchPresets();
                     await fetchStatus();
                     await fetchHistory();
                 } else {
@@ -1347,8 +1980,11 @@ const char DASHBOARD_HTML[] PROGMEM = R"rawhtml(
                     body: `apply=${pId}`
                 });
                 if (res.ok) {
+                    isScheduleDirty = false;
+                    activePresetId = parseInt(pId);
                     showToast("Preset applied successfully!");
                     await fetchSchedules();
+                    await fetchPresets();
                     await fetchStatus();
                     await fetchHistory();
                 } else {
@@ -1359,13 +1995,80 @@ const char DASHBOARD_HTML[] PROGMEM = R"rawhtml(
             }
         }
 
-        function openSavePresetModal() {
-            document.getElementById('save-preset-modal').classList.add('show');
-            document.getElementById('new-preset-name').value = '';
-            document.getElementById('new-preset-name').focus();
+        async function overwriteCurrentPreset() {
+            const sel = document.getElementById('preset-select');
+            const pId = parseInt(sel ? sel.value : basePresetId);
+            const p = presetsList.find(x => x.id == pId);
+            if (!p || p.builtin) {
+                showToast("Cannot overwrite factory presets. Use 'Save Preset' instead.");
+                return;
+            }
+            
+            if (!confirm(`Are you sure you want to overwrite preset "${p.name}" with current schedule settings?`)) {
+                return;
+            }
+            
+            // Silently commit active relay schedule first so ESP RAM has latest state
+            await saveActiveRelayScheduleSilently();
+            
+            try {
+                const res = await fetch('/api/presets', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: `overwrite=${p.id}`
+                });
+                if (res.ok) {
+                    isScheduleDirty = false;
+                    activePresetId = p.id;
+                    showToast(`Preset "${p.name}" overwritten successfully!`);
+                    await fetchSchedules();
+                    await fetchPresets();
+                    await fetchStatus();
+                    await fetchHistory();
+                } else {
+                    showToast("Error overwriting preset!");
+                }
+            } catch (err) {
+                showToast("Communication error!");
+            }
         }
+
+        function openSavePresetModal() {
+            const modal = document.getElementById('save-preset-modal');
+            const input = document.getElementById('new-preset-name');
+            modal.classList.add('show');
+            
+            // Pre-fill with current user preset name if selected
+            const currentPreset = presetsList.find(x => x.id == basePresetId);
+            if (currentPreset && !currentPreset.builtin) {
+                input.value = currentPreset.name;
+            } else {
+                input.value = '';
+            }
+            onPresetNameInput(input.value);
+            input.focus();
+        }
+
         function closeSavePresetModal() {
             document.getElementById('save-preset-modal').classList.remove('show');
+        }
+
+        function onPresetNameInput(val) {
+            const trimmed = (val || '').trim();
+            const existing = presetsList.find(x => !x.builtin && x.name.toLowerCase() === trimmed.toLowerCase());
+            const hint = document.getElementById('preset-overwrite-hint');
+            const btn = document.getElementById('btn-confirm-save-preset');
+            
+            if (existing) {
+                if (hint) {
+                    hint.style.display = 'block';
+                    hint.innerHTML = `⚠️ Preset exists. Clicking will <strong>overwrite "${existing.name}"</strong>.`;
+                }
+                if (btn) btn.innerText = `🔄 Overwrite "${existing.name}"`;
+            } else {
+                if (hint) hint.style.display = 'none';
+                if (btn) btn.innerText = 'Save Preset';
+            }
         }
 
         async function confirmSavePreset() {
@@ -1374,6 +2077,10 @@ const char DASHBOARD_HTML[] PROGMEM = R"rawhtml(
                 showToast("Please enter a name for the preset!");
                 return;
             }
+
+            // Commit active relay schedule first so ESP RAM has latest state
+            await saveActiveRelayScheduleSilently();
+
             try {
                 const res = await fetch('/api/presets', {
                     method: 'POST',
@@ -1381,9 +2088,14 @@ const char DASHBOARD_HTML[] PROGMEM = R"rawhtml(
                     body: `save=1&name=${encodeURIComponent(name)}`
                 });
                 if (res.ok) {
+                    const data = await res.json();
+                    isScheduleDirty = false;
+                    if (data && data.id) activePresetId = data.id;
                     showToast(`Preset "${name}" saved!`);
                     closeSavePresetModal();
+                    await fetchSchedules();
                     await fetchPresets();
+                    await fetchStatus();
                     await fetchHistory();
                 } else {
                     showToast("Error saving preset!");
@@ -1421,8 +2133,11 @@ const char DASHBOARD_HTML[] PROGMEM = R"rawhtml(
                     body: 'reset=1'
                 });
                 if (res.ok) {
+                    isScheduleDirty = false;
+                    activePresetId = 1;
                     showToast("Relay schedules reset to factory defaults!");
                     await fetchSchedules();
+                    await fetchPresets();
                     await fetchStatus();
                     await fetchHistory();
                 }
@@ -1702,6 +2417,15 @@ void handlePresets() {
             bool ok = applyUserPreset(presetNum);
             if (ok) {
                 server.send(200, "application/json", "{\"success\":true}");
+                return;
+            }
+        }
+    } else if (server.hasArg("overwrite")) {
+        int presetNum = server.arg("overwrite").toInt();
+        if (presetNum >= 100) {
+            bool ok = overwriteUserPreset(presetNum);
+            if (ok) {
+                server.send(200, "application/json", "{\"success\":true,\"id\":" + String(presetNum) + "}");
                 return;
             }
         }

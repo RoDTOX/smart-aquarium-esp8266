@@ -3,6 +3,40 @@
 All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [3.3.0] - 2026-09-28
+
+### Direct Preset Overwrite, 24h Visual Infographic Timeline & Vibrant Aquatic Theme Overhaul
+* **Direct Preset Overwrite & Silent Auto-Commit (Section 3):**
+  * Added in-place preset overwriting via backend API (`POST /api/presets` with `overwrite=<id>`) and `overwriteUserPreset(int id)`.
+  * Dedicated `[ 🔄 Overwrite "<Name>" ]` button in the Presets toolbar when a user preset is active or selected.
+  * Smart Save Preset modal: auto-detects existing preset names in real time, displays an overwrite advisory, and switches the action button to overwrite mode.
+  * Silent schedule auto-commit (`saveActiveRelayScheduleSilently()`): automatically synchronizes modified hour cells and pulse parameters to ESP8266 RAM/EEPROM prior to tab switching, saving, or overwriting, eliminating unsaved schedule state mismatches.
+* **24-Hour Multi-Relay Visual Timeline (Section 1: System Status):**
+  * Added an interactive 0–24h horizontal timeline in System Status displaying schedule distribution across all 4 peripherals simultaneously.
+  * Distinctive visual coding: Continuous active hours rendered with vibrant gradient bars; Intermittent / Pulse mode active hours rendered with a high-contrast diagonal hatched stripe pattern (`repeating-linear-gradient`).
+  * Real-time "NOW" vertical cursor and red time pin tracking NTP clock with automatic recalculation on window resize.
+  * Interactive tracks: clicking any relay label switches the active scheduler tab, and clicking any hour slot toggles that hour in the editor.
+* **Cheerful Aquatic Theme Overhaul (UI / UX):**
+  * Replaced dark midnight theme with an inviting, vibrant aquatic aesthetic: turquoise and azure ocean gradient, volumetric sunbeams, subtle animated floating bubbles, and seabed illustrations (corals, starfish, sea shells, treasure chest).
+  * High-contrast frosted glass cards (`rgba(255, 255, 255, 0.78)` with `backdrop-filter: blur(18px)`) ensure legibility in bright aquarium lighting.
+  * Aquatic icons (`🐟`, `🦐`, `🫧`, `🐚`) on relay tabs and marine helm indicators (☸️) on peripheral cards.
+  * Fully self-contained within ESP8266 flash (~47.4% Flash, ~48.9% RAM) with 0 external CDN dependencies.
+
+---
+
+## [3.2.1] - 2026-09-27
+
+### Section 3 Relay Tabs, Modification Race Condition Fix & Schedule Verification
+* **Touch-Friendly 4-Button Relay Tab Selector (Section 3):**
+  * Replaced the `<select id="relay-select">` dropdown with 4 dedicated responsive tab buttons (`1. Main Light`, `2. CO2 Solenoid`, `3. Air Pump`, `4. Ambient Light`).
+  * The active relay is highlighted with an illuminated cyan glow; a single tap instantly switches the 24h schedule view.
+  * Button labels update dynamically whenever custom hardware names are modified.
+* **Resolved Unsaved Modification Race Condition:**
+  * Fixed an issue where manual schedule adjustments (toggling hour cells or modifying pulse min/sec) reverted back to the active preset after 1-2 seconds.
+  * Added client-side `isScheduleDirty` state tracking to prevent background status polling (`/api/status`) from overriding the `⚙️ Custom Schedule (Modified)` state before the user clicks save.
+
+---
+
 ## [3.2.0] - 2026-09-27
 
 ### Peripheral Controls Variant C, Preset Retention & Full English Localization

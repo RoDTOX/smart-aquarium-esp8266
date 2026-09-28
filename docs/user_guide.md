@@ -55,15 +55,26 @@ Hardware names are fully customizable and persist across reboots:
 
 ---
 
-## 3. Schedule Presets Management
+## 3. Schedule Presets & 24h Operation Timeline
 
-In addition to the 3 built-in factory presets, you can save custom schedules:
+In addition to the 3 built-in factory presets, you can configure, inspect, and save custom schedules:
+
+### 24-Hour Visual Infographic Timeline (Section 1)
+* Directly under **System Status**, an interactive horizontal timeline maps out 00:00 – 24:00 operations across all 4 channels:
+  * **Continuous Channels:** Solid, vibrant gradient bars indicate active run hours.
+  * **Intermittent / Pulse Channels:** Prominent diagonal hatched stripes (`repeating-linear-gradient`) indicate pulsed ON/OFF cycling.
+  * **Real-Time "NOW" Indicator:** A vertical red tracking cursor with a live numeric pin displays current local time.
+  * **Direct Interaction:** Clicking any relay label switches the active schedule tab; clicking any hourly segment toggles that hour in the editor.
 
 ### Saving a New Preset
-1. Configure active hours and pulse parameters across all 4 relays in **3. 24h Schedule Configuration**.
-2. In the *Schedule Presets* section, click **"Save Current as Preset"**.
+1. Configure active hours and pulse parameters across all 4 relays in **3. Schedule Configuration (24h)**.
+2. In the *Schedule Presets* section, click **"Save Preset"**.
 3. Enter a descriptive name (e.g., *"Summer Schedule"*, *"Algae Treatment"*).
 4. The preset is persisted to LittleFS (`/user_presets.cfg`) and appears in the dropdown.
+
+### Overwriting an Existing Preset
+* **1-Click Toolbar Overwrite:** When an existing custom preset (e.g. *"DOI"*) is selected from the dropdown, a dedicated **`[ 🔄 Overwrite "DOI" ]`** button appears in the toolbar. Clicking it automatically performs a silent commit of your current unsaved modifications and overwrites the preset in-place on LittleFS.
+* **Modal Smart Overwrite:** If you click **"Save Preset"** and input or keep an existing preset name, the modal displays an overwrite advisory (*"⚠️ Preset exists. Clicking will overwrite..."*) and changes the action button to **`[ 🔄 Overwrite "<Name>" ]`**.
 
 ### Applying and Deleting Presets
 * **Apply:** Select the preset from the dropdown and click **"Apply"**. All 4 relay schedules update simultaneously.

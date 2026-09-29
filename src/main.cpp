@@ -128,6 +128,10 @@ void handleScheduleSet() {
                 server.send(400, "text/plain", "Bad Request");
                 return;
             }
+            if (next[i].behavior == 1 && (next[i].pulseOnSec + next[i].pulseOffSec > 3600)) {
+                if (next[i].pulseOnSec >= 3600) { next[i].pulseOnSec = 3540; next[i].pulseOffSec = 60; }
+                else { next[i].pulseOffSec = 3600 - next[i].pulseOnSec; }
+            }
         }
         updateAllRelayProfiles(next);
         server.send(200, "text/plain", "OK");
@@ -141,6 +145,10 @@ void handleScheduleSet() {
         uint32_t off = server.arg("pulse_off").toInt();
         
         if (r >= 1 && r <= 4 && (behavior == 0 || behavior == 1) && on > 0 && off > 0) {
+            if (behavior == 1 && (on + off > 3600)) {
+                if (on >= 3600) { on = 3540; off = 60; }
+                else { off = 3600 - on; }
+            }
             updateRelayProfile(r, hours, behavior, on, off);
             server.send(200, "text/plain", "OK");
             return;

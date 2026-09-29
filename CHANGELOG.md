@@ -3,6 +3,77 @@
 All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [3.6.4] - 2026-09-29
+
+### Airstone Bubble Origin, Full Now-Line, Timeline Label Pulse Blips, 24h Labels & Compact Program Editor
+* **Airstone Bubble Origin Fixed:**
+  * Fixed SVG CSS transform scaling offset (`transform-box: fill-box; transform-origin: center;`) that previously made air bubbles emerge from the driftwood. Bubbles now rise strictly out of the bottom-right airstone unit (`x=845..885`, `y=290`).
+* **Vertical Now-Line Across All 4 Channels:**
+  * Extended real-time vertical now-line across all 4 relay channels in both Viu and Clar layouts.
+* **Timeline Label Pulse Blips:**
+  * Integrated rhythmic pulse animations (`.pulse-on`, `.pulse-off`) on the indicator dots next to channel names in both Viu and Clar timelines.
+* **Full 24-Hour Labels Across All Themes:**
+  * Added individual hour labels `00`..`23` to all themes: Viu (Sky ribbon), Clar (Heatmap header), Consolă (Radial dial circumference), and Clasic (Slot track headers).
+* **Compact Channel Program Editor:**
+  * In Consolă and Clar, pulse run/rest textboxes are hidden when Continuous mode is active.
+  * Constrained preset dropdown width, allowing select dropdown, "Save as...", Rename, and Delete buttons to fit compactly on a single row.
+
+## [3.6.3] - 2026-09-29
+
+### Airstone & CO2 Realignment, Instant Draft Bar Dismissal & Sequential Startup Sync
+* **Airstone & CO2 Biotope Realignment:**
+  * Placed airstone with dense aeration bubbles on the right side at substrate; placed glass CO2 bubble counter and ceramic diffuser micro-mist on the left side.
+* **Instant Draft Bar Dismissal:**
+  * Instant status bar dismissal upon HTTP 200 OK without delay; added request guard against double-clicks.
+* **Sequential Boot & Auto-Heal Schedule Sync:**
+  * Replaced parallel startup calls with sequential `boot()` sequence and exponential retry loop to prevent socket drops on ESP8266.
+
+## [3.6.2] - 2026-09-29
+
+### Pulse LED Indicators, 60m Limit, Hierarchy Alignment, Clasic Layout & Tank Overhaul
+* **Rhythmic Pulse LED Indicators:**
+  * Added distinct blinking indicators across ALL 4 themes (Consolă, Clar, Viu, Clasic) via unified `getLedClass(st)`.
+  * **Pulse ON:** Solid green for 1s followed by 2 crisp grey blips.
+  * **Pulse OFF (Rest / Failsafe pause):** Solid grey for 1s followed by 2 crisp green blips.
+* **Intermittent Cycle Limit (ON + OFF <= 60 min):**
+  * Enforced `pulse_on + pulse_off <= 3600` seconds in UI with toast feedback and automatic value adjustment.
+  * Backend clamping in `src/main.cpp` `handleScheduleSet` for both batch and legacy endpoints.
+* **Universal Layout Hierarchy:**
+  * Reordered sections across all layouts so Schedule / Program Editor is placed above Equipment Controls:
+    * **Consolă:** `Channel Program` placed above `Channels & Rockers`.
+    * **Clar:** `Daily Schedule Heatmap` placed above `Device Tiles & Sensors`.
+    * **Viu:** `Daily Schedule Ribbon Timeline` placed above `Equipment Controls`.
+    * **Clasic:** `24h Schedule & Real-Time Status` placed above `Relays Manual Controls`.
+* **Title Redundancy Removed:**
+  * Cleaned up duplicate project title from Consolă's status strip (`con-strip`), leaving the main application header as the single source of truth and distributing the 6 telemetry metric cells evenly.
+* **Restored Classic Dashboard Layout (`🏛️ Clasic`):**
+  * Added 4th theme option in header switcher: `[🐠 Viu | 📟 Consolă | 🏡 Clar | 🏛️ Clasic]`.
+  * Restored retro-modern glass cards with 24-slot horizontal sliders, slot toggling, pulse duration inputs, and preset bar, wired into the unified reactive `Aq` state engine.
+* **Acvariu Viu Scene Enhancements:**
+  * Replaced generic fish with authentic tank fauna swimming strictly head-first in both directions: Mickey Mouse Platy (orange with 3 tail dots), Male Guppy (wavy rainbow fan-tail), Siamese Algae Eater (SAE with black lateral line), Guppy Fry school, and Red Cherry Shrimp.
+  * Textured porous airstone with airline tubing producing a rich, dense aeration bubble column when Air Pump is active.
+  * Clear glass CO2 bubble counter with discrete rising bubbles when CO2 is active, plus ceramic diffuser with micro-mist.
+  * Lush multi-layered biotope plants: tall emerald Vallisneria ribbons, copper-tipped Ludwigia repens, Anubias on driftwood, and floating Frogbit roots.
+
+## [3.6.0] - 2026-09-29
+
+### Unified Multi-Theme Engine: Acvariu Viu, Consolă, and Clar with Dynamic Live Switching
+* **Integrated 3 distinct layouts into a single dashboard:**
+  * **Acvariu Viu (Live Biotope Simulation):** Animated SVG aquarium tank with realistic daylight rays, moonlight glow, swimming and wiggling fish, swaying aquatic plants, airstone bubble column, CO2 micro-diffuser fizz, sinking food flakes during feeding, and glowing frosted glass equipment cards.
+  * **Consolă (Technical Cockpit Instrument):** Dense instrument panel with top telemetry strip, 24h SVG radial dial with 4 concentric channels, 3-position rockers (AUTO / ON / OFF), 24h light sensor telemetry sparkline, and LittleFS event log.
+  * **Clar (Modern Smart Home):** Clean Scandinavian smart-home aesthetics with 2x2 device tiles, 24-column schedule heatmap matrix with now needle, activity log with category filters, and system health status.
+* **Live Style & Mode Switchers in App Header:**
+  * One-click switching between `🐠 Viu`, `📟 Consolă`, and `🏡 Clar` saved persistently in `localStorage['aquarium_ui_style']`.
+  * Cycling theme mode (`Auto` / `Light` / `Dark`) with real-time day/night sync following Relay 1 schedule.
+  * Direct access pill link to Galaxy-A6 Smart Services Hub.
+* **Single Real-Device `Aq` Adapter:**
+  * Unified all 3 layouts behind a single reactive API adapter polling `/api/status`, `/api/schedule`, `/api/presets`, and `/api/history`.
+  * Batch schedule drafting with bottom status bar (`Discard` and `Apply to device`), roving tabindex for accessible keyboard navigation (arrow keys + Space/Enter).
+  * Full modal dialog suite: Custom Peripheral Names, WiFi setup, Preset management (Create, Rename, Delete with confirmation), and OTA update trigger.
+  * Zero-injection escaping on all device strings (`Lamp "big" <b>x</b>` and custom names).
+* **Efficiency & Size Budget:**
+  * Compacted unified dashboard gzipped payload to 28,930 bytes (~28.2 KB), well within the 40 KB flash budget. Flash utilization: 41.7%, RAM: 49.3%.
+
 ## [3.5.0] - 2026-09-29
 
 ### UI/UX Review Fixes: Schedule Drafts, Dark Mode Contrast, Robust JSON & Gzipped Dashboard

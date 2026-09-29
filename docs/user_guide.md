@@ -1,4 +1,4 @@
-# User & Configuration Guide: Aquatlantis Smart Aquarium Controller (v3.2)
+# User & Configuration Guide: Aquatlantis Smart Aquarium Controller (v3.4)
 
 This guide details the operation, configuration, and administration of the ESP8266-based aquarium controller (LC-Relay-ESP12-4R-MV 4-relay board).
 
@@ -10,13 +10,17 @@ The ESP-12F board runs in hybrid **AP + STA** (Access Point + Station) mode. It 
 
 ### Web Dashboard Access Methods
 
-| Device | Recommended URL | Protocol Used | Notes |
+| Device / Interface | Recommended URL | Protocol Used | Notes |
 |---|---|---|---|
+| **Nexus Central Gateway** | **`http://nexus/`** | **Nginx Port 80** | Central Home Portal with live cards for Aquarium, TeslaMate, and Grafana. |
+| **Direct Aquarium Link** | **`http://nexus/aquarium`** | **Reverse Proxy (Port 80)** | Direct access to the aquarium controller without remembering port numbers or IP. |
 | **Windows 10 / 11** | **`http://acvariu/`** | **NetBIOS / LLMNR** | Works natively in Edge, Chrome, and Firefox without `.local`. |
 | **Windows Explorer** | **This PC -> Network** | **SSDP / UPnP** | Discovered under *Other Devices* as *"Aquatlantis Smart Aquarium"*. Double-click opens your browser. |
 | **iPhone / iPad (iOS)** | **`http://acvariu.local/`** | **mDNS (Bonjour)** | Works natively in Safari and Chrome. |
 | **Android** | **`http://acvariu.local/`** or **Direct IP** | **mDNS / IP** | On some Android browsers mDNS resolution can be restricted; use direct local IP if needed. |
 | **Any Device** | **`http://192.168.1.32/`** | **Direct HTTP (IP)** | Replace with the actual IP assigned by your router. |
+| **Tailscale Remote** | **`http://100.83.135.74:8080/`** | **Tailscale Bridge** | Direct secure remote tunnel via Samsung home node. |
+
 
 ### Why `acvariu.local` Previously Failed on Windows
 1. **Public vs. Private Network Profile:** When Windows WiFi connection is set to "Public Network", the Windows firewall blocks UDP port 5353 (mDNS). Switching the connection to **Private Network** in Windows Settings unblocks mDNS.
@@ -46,87 +50,111 @@ If your router is offline or WiFi credentials have changed:
 
 Hardware names are fully customizable and persist across reboots:
 1. In the dashboard, navigate to **5. System Administration**.
-2. Click **"✏️ Rename Relays & Sensors"**.
-3. In the modal dialog, configure custom names:
-   * **Relays 1 - 4:** e.g., *"WRGB Plant Light"*, *"JBL CO2 Solenoid"*, *"Eheim Air Pump"*, *"Blue Night Light"*.
+2. Click **"✏️ Customize I/O Names"**.
+3. In the modal dialog, configure custom names (emojis supported):
+   * **Relays 1 - 4:** e.g., *"💡 WRGB Light"*, *"🫧 CO2 Solenoid"*, *"🌊 Air Pump"*, *"🌙 Night Light"*.
    * **Digital Inputs (GPIO 0, 4, 2, 15):** e.g., *"Mains Power Sensor"*, *"Low Water Float Switch"*.
    * **Analog Sensor (A0):** e.g., *"Room LDR Light Sensor"*.
 4. Click **"Save Names"**. Configuration is stored on LittleFS (`/names.cfg`) and survives reboots and firmware updates.
 
 ---
 
-## 3. Schedule Presets & 24h Operation Timeline
+## 3. Interactive 24h Timeline Scheduler & Presets (Chapter 1)
 
-In addition to the 3 built-in factory presets, you can configure, inspect, and save custom schedules:
+The 24h schedule configuration, live physical telemetry, and presets are unified into **Chapter 1: 1. 24h Schedule & Real-Time Status**:
 
-### 24-Hour Visual Infographic Timeline (Section 1)
-* Directly under **System Status**, an interactive horizontal timeline maps out 00:00 – 24:00 operations across all 4 channels:
-  * **Continuous Channels:** Solid, vibrant gradient bars indicate active run hours.
-  * **Intermittent / Pulse Channels:** Prominent diagonal hatched stripes (`repeating-linear-gradient`) indicate pulsed ON/OFF cycling.
-  * **Real-Time "NOW" Indicator:** A vertical red tracking cursor with a live numeric pin displays current local time.
-  * **Direct Interaction:** Clicking any relay label switches the active schedule tab; clicking any hourly segment toggles that hour in the editor.
+### Mobile Touch-Scrollable 24-Hour Timeline Scheduler
+* **Touch-Friendly Ergonomics:** An interactive horizontal timeline with smooth horizontal swipe (`min-width: 820px`) providing comfortable ~28x28px touch targets for every hour on phones.
+* **Sticky Channel Names & Live Dynamic State Dots:** Equipment labels remain permanently visible on the left while swiping through hours. Each track row features an 8px circular indicator:
+  * 🟢 **Solid Green (Conducting):** The relay is physically conducting / energized.
+  * ⚡ **Green Blip (100ms pulse every 1.8s):** When inside an active scheduled hour but resting in pulse pause ("Standby: off now, but active schedule running").
+  * ⚫ **Slate Gray (Inactive):** The relay is idle / off outside scheduled hours.
+* **Unconfigured Channel Disconnected / OFF View:**
+  * When a channel has no hours configured (e.g. Relay 4), the track row is styled muted gray (`.track-empty`), displays an `[OFF]` tag, and shows a centered `⚪ All 24h OFF • Click any hour to schedule` notice.
+* **1-Tap Quick Fill Controls:** Under the timeline, click **`[ ⚡ All 24h ]`** to activate all 24 hours or **`[ ⚪ Clear All ]`** to clear the selected channel in a single tap.
+* **Auto-Scroll to Current Hour:** On page load, the view automatically centers around the current local NTP hour.
+* **Direct Tap-to-Toggle:** Tapping any hour slot directly toggles that hour ON or OFF and immediately synchronizes to the ESP8266 controller (`saveActiveRelayScheduleSilently()`).
+* **Direct Track Row Selection:** Tapping any track row selects that channel for configuring active mode and pulse durations below (no separate channel tab buttons).
+* **Visual Coding:** Continuous active hours are rendered with solid vibrant gradient bars; Intermittent/Pulse hours feature high-contrast diagonal stripes (`repeating-linear-gradient`).
+* **Real-Time "NOW" Indicator:** A vertical red tracking line with a live numeric pin displays current local time.
 
-### Saving a New Preset
-1. Configure active hours and pulse parameters across all 4 relays in **3. Schedule Configuration (24h)**.
-2. In the *Schedule Presets* section, click **"Save Preset"**.
-3. Enter a descriptive name (e.g., *"Summer Schedule"*, *"Algae Treatment"*).
-4. The preset is persisted to LittleFS (`/user_presets.cfg`) and appears in the dropdown.
-
-### Overwriting an Existing Preset
-* **1-Click Toolbar Overwrite:** When an existing custom preset (e.g. *"DOI"*) is selected from the dropdown, a dedicated **`[ 🔄 Overwrite "DOI" ]`** button appears in the toolbar. Clicking it automatically performs a silent commit of your current unsaved modifications and overwrites the preset in-place on LittleFS.
-* **Modal Smart Overwrite:** If you click **"Save Preset"** and input or keep an existing preset name, the modal displays an overwrite advisory (*"⚠️ Preset exists. Clicking will overwrite..."*) and changes the action button to **`[ 🔄 Overwrite "<Name>" ]`**.
-
-### Applying and Deleting Presets
-* **Apply:** Select the preset from the dropdown and click **"Apply"**. All 4 relay schedules update simultaneously.
-* **Delete:** When a custom preset is selected, the **"Delete"** button appears. (Factory presets 1–3 are write-protected).
-* **Reset to Defaults:** Restores all relay schedules to recommended factory settings for Aquatlantis BioBox.
-
----
-
-## 4. Smart Feeding Mode
-
-During feeding or water maintenance, aeration and strong currents can disperse flake food or draw it into surface skimmers.
-* In **2. Peripheral Status & Control**, click **"🫧 Feed Mode (10m)"**.
-* **Action:** Immediately pauses Relay 3 (Air Pump / Filtration) for 10 minutes.
-* **Visual Alert:** A countdown banner appears at the top (*"Feed Mode Active • 09:45 remaining"*).
-* **Auto-Resume:** When the timer expires, the pump automatically resumes its scheduled profile.
-* You can cancel Feeding Mode at any time by clicking **"Cancel"** in the banner.
+### Unified Preset Toolbar & Rename Workflow
+* **1-Click Preset Loading:** Selecting any preset from the dropdown automatically applies it immediately across all 4 channels without extra confirmation steps.
+* **Single "💾 Save Schedule" Button:**
+  * When modifications are made, the button shows **`💾 Save Schedule *`** with a subtle amber glow indicating unsaved preset changes.
+  * If working on an active custom preset, clicking **"💾 Save Schedule"** prompts: *"Save current schedule and overwrite preset '<Name>'?"*. Confirming updates all 4 channels and overwrites the preset in-place on LittleFS.
+  * If starting from a factory preset or unnamed schedule, prompts to name and save as a new custom preset.
+* **"✏️ Rename" Button:** Appears whenever a custom preset is active, opening a dialog to rename the preset in-place on LittleFS.
+* **"➕ New Preset" Button:** Opens a modal dialog allowing you to name and save the current timeline settings as a brand new preset at any time.
+* **"Delete" Button:** Appears whenever a custom preset is active, allowing quick deletion. (Factory presets 1–3 are write-protected).
 
 ---
 
-## 5. Intermittent Mode (Pulse Mode) with Minutes & Seconds
+## 4. Manual Overrides & Maintenance (Chapter 2)
 
-To pulse a peripheral (e.g. aeration during power outages or fine CO2 dosing):
-1. Select the target relay in the schedule selector.
-2. Under *Mode during active hours*, select **"Pulse / Intermittent (repeating ON / OFF cycles)"**.
-3. Configure the duration pairs:
-   * **Pulse ON:** `[ Min ] m [ Sec ] s` (active run time)
-   * **Pause OFF:** `[ Min ] m [ Sec ] s` (idle rest time)
-4. Click **"Save Relay Schedule"**.
-
----
-
-## 6. Single-Line System Event Log
-
-* Compact single-line timeline: `[DD.MM HH:MM:SS] Message`.
-* Timestamps omit year for maximum legibility on mobile screens.
-* All user actions (schedule save, manual override, preset applied, renaming) generate explicit confirmation logs and UI toasts.
-* `/log.txt` automatically rotates at 2.5 KB to protect flash memory endurance.
+Dedicated strictly to manual control, emergency actions, and equipment maintenance:
+* **Running Status Badges with Media Icons:**
+  * **`▶️ On • Until HH:MM`** / **`▶️ Running • Pause in ...`**: Clean running triangle indicator for active conducting states.
+  * **`⏸️ In Pause • Resumes in ...`**: Pause indicator when resting in an active intermittent cycle.
+  * **`⚪ Off • Starts at HH:MM`** / **`⚪ Off • No schedule active`**: Inactive channel indicators.
+* **Smart Feeding Mode:** Click **"🫧 Feed Mode (10m)"** to pause Relay 3 (Air Pump / Filtration) for 10 minutes. A countdown banner appears at the top (*"Feed Mode Active • 09:45 remaining"*). Click **"Cancel"** at any time to resume schedule.
+* **Auto (All):** Click to instantly clear all manual overrides and return all 4 relays to their automated 24h timeline schedule.
+* **Interactive Relay Badges:**
+  * **AUTO:** Green when following schedule; gray when manually overridden.
+  * **⏻ ON / OFF:** Toggle between forced ON, forced OFF, or back to automatic schedule.
 
 ---
 
-## 7. Real-Time Light Sensor Telemetry
+## 5. Digital Inputs & Sensors (Chapter 3)
 
-* Replaced external CDN dependencies with a self-hosted, animated progress meter (0% - 100%).
-* 100% offline capability — dashboard loads instantly on local LAN without internet access.
-* **Smart Lamp Diagnostic:** If Relay 1 (Main Light) is ON for >30 seconds but the sensor reads under 15%, the system logs an automatic diagnostic warning to inspect the fixture's power supply.
+* Monitors digital inputs on GPIO 0, 4, 2, and 15 (e.g. mains power detection, float switches).
+* **Analog Light Sensor (A0):** Self-hosted, animated progress meter (0% - 100%) tracking ambient room lighting.
 
 ---
 
-## 8. Over-The-Air Wireless Firmware Updates (OTA)
+## 6. Event History & System Administration (Chapters 4 & 5)
+
+* **Chapter 4: Event History:** Rolling 20-event log history (`[DD.MM HH:MM:SS] Message`) with instant **Refresh** button. `/log.txt` rotates automatically at 2.5 KB to protect flash memory endurance.
+* **Chapter 5: System Administration:** Quick access to **Customize I/O Names**, **WiFi Setup**, and **Firmware Update (OTA)**.
+
+---
+
+## 7. Over-The-Air Wireless Firmware Updates (OTA)
 
 Update firmware wirelessly through any browser:
 1. In PlatformIO, compile the firmware (`pio run`). Binary is located at `.pio/build/esp12e/firmware.bin`.
-2. Open **`http://acvariu/update`** (or `http://acvariu.local/update`).
-3. Authenticate with credentials defined in `Config.h` (default: `admin` / `admin123`).
+2. Open **`http://acvariu/update`** (or `http://acvariu.local/update` / `http://nexus/aquarium/update`).
+3. Authenticate with credentials defined in `secrets.h` (default: `admin` / `21051990`).
 4. Select `firmware.bin` and click **Flash Firmware**. The board writes the image and reboots automatically in ~12 seconds.
+
+---
+
+## 8. Deep Abyss Dark Mode & Real Biotope Animation
+
+* **Theme Switcher:** Tapping the header button cycles through `☀️ Light`, `🌙 Dark`, and `🌓 Auto`.
+  * In `Auto` mode, the dashboard automatically syncs with the aquarium's physical Day/Night cycle (lighting active vs. off).
+* **Real Planted Tank Biotope Animation:** Modeled directly after the real 56L Aquatlantis planted setup:
+  * Volcanic gravel substrate bed and hanging duckweed/Salvinia roots.
+  * Swaying stem plants (Hygrophila, Bacopa, Staurogyne).
+  * Multi-stream dynamic rising bubbles (micro, small, medium, and 3D glass globes with realistic sinusoidal wobble).
+  * Inhabitants with strict head-first swimming direction: Mickey Mouse platy, male guppy with undulating fan tail, fry school, Siamese Algae Eaters with horizontal black stripe, red cherry shrimp, and zebra snail.
+* **Aviation Double-Blip Status Dots:** In pulse mode, relays blink with a high-visibility double-blip sequence (green/white running, white/green pause) on a 1.2-second cycle.
+* **Outage Duration Tracking:** Automatically measures and logs duration when AC grid power is cut or restored (`[PWR] AC Grid Restored after X outage` in bold red) and when WiFi reconnects (`[WIFI] Connection Restored after Y outage` in amber).
+
+---
+
+## 9. Nexus Central Gateway & Home Portal
+
+* **Unified Port 80 Access:** Runs on the Samsung home server node (`192.168.1.28` / Tailscale `100.83.135.74`) via Nginx and Magisk `iptables` NAT redirection (`80 -> 8088`).
+* **Home Portal (`http://nexus/` or `http://192.168.1.28/`):** Glassmorphic landing page displaying real-time Online/Offline health for:
+  * 🐠 **Aquarium Controller** &rarr; `http://nexus/aquarium` (or `http://192.168.1.28/aquarium`)
+  * 🚗 **TeslaMate** &rarr; `http://nexus/teslamate` (or `http://192.168.1.28/teslamate`)
+  * 📊 **Grafana** &rarr; `http://nexus/grafana` (or `http://192.168.1.28/grafana`)
+* **Access via Tailscale (Remote):**
+  * Current Tailscale device name: **`galaxy-a6`** (`galaxy-a6.tail481af9.ts.net`).
+  * Direct URLs: **`http://galaxy-a6/aquarium`** or **`http://100.83.135.74/aquarium`**.
+  * To use `http://nexus/` on Tailscale, rename the device `galaxy-a6` to `nexus` in the Tailscale Admin Console.
+* **Access via Local Wi-Fi (Laptop):**
+  * Direct URL: **`http://192.168.1.28/aquarium`** (works immediately without configuration).
+  * For `http://nexus/`: Add `192.168.1.28 nexus` to Windows `hosts` file (`C:\Windows\System32\drivers\etc\hosts`) or router DNS.
+

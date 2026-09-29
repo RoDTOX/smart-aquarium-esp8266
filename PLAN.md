@@ -9,9 +9,11 @@ This document tracks all development tasks (TODO and DONE), prioritized by syste
 
 ## 🚀 Current System Status
 
-* **Current Firmware:** `v3.3.0`
+* **Current Firmware:** `v3.4.1`
 * **Hardware Status:** Fully assembled, stable, and operating in production (BioBox 56L aquarium).
-* **Access Endpoints:** `http://acvariu/` (Windows), `http://acvariu.local/` (Apple/Android), or `http://192.168.1.32/`.
+* **Access Endpoints:**
+  * Direct: `http://acvariu/` (Windows), `http://acvariu.local/` (Apple/Android), or `http://192.168.1.32/`.
+  * Central Nexus Hub: `http://nexus/` (Portal), `http://nexus/aquarium`, `http://nexus/teslamate`, `http://nexus/grafana`.
 
 ---
 
@@ -19,6 +21,25 @@ This document tracks all development tasks (TODO and DONE), prioritized by syste
 
 | Date & Time | Priority | Category | Feature / Completed Task | System Impact |
 |---|---|---|---|---|
+| **2026-09-29 13:40** | **P1 - Critical** | **UI / Aesthetic** | **Firmware v3.4.1: Anatomical Swimming Physics, Deep Abyss Dark Mode & Multi-Stream Bubbles** | Fixed fish swimming orientation (100% head-first in both directions via corrected `scaleX` keyframes); removed diver figurine completely; eliminated all chalky gray backgrounds in dark mode (stat-blocks, header, sticky relay labels, inactive slots, inputs) with deep sapphire glass; added 26 dynamic multi-sized bubbles across 3 streams with sinusoidal wobble. |
+| **2026-09-29 13:10** | **P1 - Critical** | **Firmware / UI / Hub** | **Firmware v3.4.0: Deep Abyss Dark Mode, Real Tank Biotope, Outage Duration & Nexus Hub** | Deep Abyss Dark Mode with Day/Night auto-sync; real planted biotope modeled on user tank; 1.2s aviation beacon double-blip status dots; mm:ss pulse inputs; schedule revert (`[ ↺ Restore ]`); icon toolbar; power/wifi outage duration tracking in red/amber; unified Nexus Gateway on port 80. |
+| **2026-09-28 18:58** | **P1 - Critical** | **Integration / Remote** | **Tailscale Status Indicator & TeslaMate Navbar Integration** | Dynamic Tailscale LED on Aquarium dashboard; CORS headers enabled; `🐠 Acvariu` with live status LED integrated into TeslaMate navbar on Cinderella. |
+
+| **2026-09-28 14:10** | **P1 - Critical** | **OTA / Deploy** | **Firmware v3.3.3 build & OTA flash verification** | Firmware v3.3.3 deployed live via OTA; verified `▶️` running badges, `⚪ All 24h OFF` track notice, 100ms green blip pulse pause, preset renaming, and dirty save indicator. |
+| **2026-09-28 14:05** | **P1 - Critical** | **UI / Visualization** | **Dynamic Pulse Pause Blip & Disconnected Track Styling** | 100ms periodic green blip (`blip-green` @keyframes) in pulse pause resting phase; `.track-empty` notice on 0h channels. |
+| **2026-09-28 14:00** | **P1 - Critical** | **Presets / UX** | **Preset Renaming Workflow (`[ ✏️ Rename ]`)** | Replaced factory reset button with in-place preset rename modal and LittleFS persistence via `/api/presets?rename=`. |
+| **2026-09-28 13:55** | **P2 - Medium** | **UI / Controls** | **Quick Fill 24h / Clear All & Dirty Save Indicator** | Added `[ ⚡ All 24h ]` and `[ ⚪ Clear All ]` 1-tap configuration buttons; `💾 Save Schedule *` amber glow when modified. |
+| **2026-09-28 13:48** | **P1 - Critical** | **Presets / UX** | **Eliminate "Custom Schedule (Modified)" & Lock Active Preset** | Modifying schedules preserves active preset id; dropdown only shows real presets; Save Schedule directly overwrites active preset without mode switching confusion. |
+| **2026-09-28 13:42** | **P1 - Critical** | **OTA / Deploy** | **Firmware v3.3.2 build & OTA flash verification** | Firmware v3.3.2 deployed live via OTA; Chapter 1 timeline with live physical dots, unified save, direct row select, and swapped chapters verified. |
+| **2026-09-28 13:40** | **P1 - Critical** | **UI / Architecture** | **Streamlined UI: Unified Presets Toolbar & Single Save Button** | Replaced multi-button save/overwrite confusion with a single `[ 💾 Save Schedule ]` button (auto-commits to active preset) and `[ ➕ New Preset ]` button. |
+| **2026-09-28 13:38** | **P1 - Critical** | **UI / Ergonomics** | **Direct Timeline Track Selection & Live Physical State Dots** | Removed 4 channel tab buttons; row click selects channel; 8px live physical state dot (🟢 conducting / ⚫ idle) on each sticky track label. |
+| **2026-09-28 13:35** | **P1 - Critical** | **UI / Hierarchy** | **Chapter Reorganization & Priority Promotion** | Chapter 1 = 24h Schedule & Real-Time Status; Chapter 2 = Manual Overrides & Maintenance; Chapters 4 & 5 swapped (Event History & System Administration). |
+| **2026-09-28 13:00** | **P1 - Critical** | **OTA / Deploy** | **Firmware v3.3.1 build & OTA flash verification** | Firmware v3.3.1 live on ESP8266; Chapter re-numbering, mobile scrollable timeline, and SVG power icon verified. |
+| **2026-09-28 12:55** | **P1 - Critical** | **UI / Ergonomics** | **Mobile Touch-Scrollable 24h Interactive Timeline (Option 2)** | Smooth horizontal swipe (`overflow-x: auto`, 820px track, 28x28px slots) with sticky equipment labels, auto-scroll to current hour, and tap-to-toggle schedule sync. |
+| **2026-09-28 12:50** | **P1 - Critical** | **UI / Hierarchy** | **Dashboard Consolidation & Chapter Renumbering** | Merged timeline and scheduler into Chapter 2 (24h Schedule & Presets); removed duplicate 24-button grid; top unnumbered diagnostic overview. |
+| **2026-09-28 12:45** | **P2 - Medium** | **Bugfix / Cross-Platform** | **Cross-Platform SVG Power Button Icon** | Replaced missing mobile Unicode glyph `⏻` with vector SVG icon, preventing `[X]` box on Android/Chrome. |
+| **2026-09-28 12:40** | **P2 - Medium** | **UI / Cleanliness** | **Clean User Peripheral Names & Helm Removal** | Removed hardcoded emoji prefixes from relay tabs; user has 100% control over names and emojis; removed helm icon (`☸️`). |
+| **2026-09-28 12:35** | **P2 - Medium** | **Animation / Theme** | **Head-First Aquatic Creature Swimming & Edge Bounces** | Re-engineered directional keyframes (`scaleX(-1)` moving right, `scaleX(1)` moving left); added open-water turns and 6 aquatic creatures (tropical fish, dolphin, sea turtle, shrimp). |
 | **2026-09-28 11:54** | **P1 - Critical** | **OTA / Deploy** | **Firmware v3.3.0 build & OTA flash verification** | Firmware v3.3.0 live on ESP8266; aquatic theme, timeline, and preset overwrite verified. |
 | **2026-09-28 11:50** | **P1 - Critical** | **Presets / UX** | **Direct Preset Overwrite & Silent Schedule Auto-Commit (Section 3)** | Enabled in-place preset overwriting (`overwriteUserPreset()`), smart modal warning, and auto-sync of modified hours. |
 | **2026-09-28 11:45** | **P1 - Critical** | **UI / Visualization** | **24-Hour Multi-Relay Visual Infographic Timeline (Section 1)** | Added 0-24h horizontal timeline with diagonal hatched stripes for pulse mode and live real-time "NOW" cursor. |
@@ -65,33 +86,31 @@ Planned enhancements prioritized by system safety, reliability, and user impact.
 
 ### Priority P1 (High Impact / Aquarium Safety)
 
-* [ ] **Submersible Digital Temperature Sensor (DS18B20) on GPIO4:**
-  * *Description:* Water temperature is the most critical vital parameter for fish and plants. GPIO4 is currently exposed on header with internal pull-up capability. Connecting a waterproof DS18B20 probe will provide continuous live temperature telemetry.
-  * *Safety Alarms:* Visual alarm and notification if water drops below 23°C (failed heater) or exceeds 28°C (summer overheating).
-  * *Estimated Effort:* Low (`OneWire` and `DallasTemperature` libraries).
+* [ ] **Submersible Digital Temperature Sensor (DS18B20) on GPIO4 & Smart Thermostat Safety Cutoff:**
+  * *Description:* Water temperature is the most critical vital parameter for fish and plants. Connecting a waterproof stainless steel DS18B20 probe to GPIO4 (with a 4.7kΩ pullup) provides high-precision live temperature telemetry (±0.5°C).
+  * *Thermostat Safety Cutoff (Relay 4):* Connect the aquarium heater through Relay 4. If the physical heater thermostat fails closed and water exceeds 26.5°C, ESP8266 forces Relay 4 OFF to prevent boiling the aquarium.
+  * *Safety Alarms:* Visual dashboard warning if water drops below 23°C (dead heater) or exceeds 27.5°C (summer overheating).
+* [ ] **Air Pump Battery Backup / Mini-UPS with BMS (Power Loss Failsafe):**
+  * *Description:* Keep fish and beneficial filter bacteria alive during power grid blackouts without requiring heavy UPS hardware.
+  * *Implementation:* Mini-UPS 5V/12V module with 18650 Li-Ion cells & integrated BMS. When grid power drops, GPIO0 triggers `MODE_POWER_LOSS`; ESP8266 cuts non-essential loads (lights, CO2) and runs the air pump (Relay 3) on an energy-saving pulse schedule (e.g. 60s ON / 120s OFF), providing up to 24-48 hours of life-support aeration on battery.
+* [ ] **CO2 Precision Needle Valve Replacement:**
+  * *Hardware Upgrade:* Replace coarse/drifting needle valve with a dedicated high-precision micro-metering valve (Camozzi RFL / SMC) to guarantee rock-steady bubble count without creeping open over time.
 
 ---
 
-### Priority P2 (Advanced Features & UX Refinements)
+### Priority P2 (Advanced Features & I/O Expansion)
 
-* [ ] **Low Water Level Float Switch (GPIO2 or GPIO15):**
-  * *Description:* Detect water evaporation in BioBox pump chamber.
-  * *Action:* Visual alert if water level is dangerously low, preventing dry-run pump damage.
-* [ ] **Automated CO2 Siesta Ramp (Planted Tank Preset):**
-  * *Description:* Preset optimized for algae inhibition (BBA control) with 1.5h mid-day CO2 siesta.
+* [ ] **Low Water Level Float Switch (GPIO2):**
+  * *Description:* Submersible float switch inside the BioBox filter pump compartment to detect water evaporation or clogged filter floss.
+  * *Action:* Visual alert and safety shutoff to prevent the water pump from running dry.
+* [ ] **Floor Water Leak / Flood Sensor (GPIO15):**
+  * *Description:* Conductive leak sensor placed on the cabinet/floor under the aquarium. Immediately alerts and isolates filtration if water is detected outside the tank.
+* [ ] **Water Quality Telemetry on Analog Input A0 (TDS or pH):**
+  * *Description:* Utilize the analog A0 channel with an analog TDS (Total Dissolved Solids) sensor to monitor water mineralization and TDS spikes before water changes.
 * [ ] **Configurable Feeding Mode Duration:**
   * *Description:* Select duration (5 min, 10 min, 15 min) directly before triggering feeding mode.
-
----
-
-### Priority P3 (Integrations & Visual Themes)
-
-* [ ] **MQTT / Home Assistant Integration (Auto-Discovery):**
-  * *Description:* Publish sensor states and relay controls over MQTT for Home Assistant dashboard integration.
-* [ ] **Accent Color Theme Selector (Cyan / Emerald / Amethyst / Amber):**
-  * *Description:* Allow user to choose UI accent color palette according to personal preference.
 * [ ] **Downloadable Configuration Backup & Restore (JSON):**
-  * *Description:* Export schedules, custom names, and presets to `aquarium_backup.json` with restore capability.
+  * *Description:* Export schedules, custom names, and presets to `aquarium_backup.json` with 1-click restore capability.
 
 ---
 

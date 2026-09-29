@@ -3,6 +3,163 @@
 All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [3.4.1] - 2026-09-29
+
+### Visual & Aesthetic Overhaul: Anatomical Swimming Physics, Deep Abyss Dark Mode & Multi-Stream Bubbles
+* **Fish Swimming Physics & Anatomical Orientation:**
+  * Fixed horizontal scale inversion across all CSS animation keyframes (`scaleX(-1)` swimming right, `scaleX(1)` swimming left).
+  * Every inhabitant (Mickey Mouse platy, male guppy with undulating fan tail, fry school, Siamese Algae Eaters, red cherry shrimp) swims strictly head-first in both directions.
+* **Purged Diver Figurine:**
+  * Completely removed the decorative diver figurine markup and animations from the UI.
+* **Deep Abyss Dark Mode Polish (No More Washed-Out Grays):**
+  * Eliminated all chalky/milky light gray backgrounds in Dark Mode (`.stat-block`, `header`, `.timeline-relay-label`, `.timeline-card`, `.slot-off`, `.sys-badge`, inputs, and selects).
+  * Applied sleek translucent deep sapphire/slate glass with luminous cyan borders (`rgba(56, 189, 248, 0.25)`), vivid labels, and crisp typography.
+* **Dynamic Multi-Stream Bubble Aquarium Engine:**
+  * Expanded bubbles layer to 26 multi-sized rising bubbles across 3 streams (airstone diffuser on left, filter outflow on right, ambient tank center).
+  * 4 size categories: micro fizz (3-5px), small (7-9px), medium (12-16px), and 3D glass globes (20-26px with specular sheen).
+  * Implemented natural sinusoidal hydrodynamic wobble keyframes (`riseWobble1`, `riseWobble2`, `riseFastMicro`) with staggered negative delays for continuous aquatic life.
+* **Nexus Gateway Reverse Proxy & Live Monitoring Polish:**
+  * Added reverse proxy routing in Nginx for TeslaMate static assets (`/assets/`, `/images/`) and real-time LiveView WebSockets (`/live/websocket` with HTTP 101 upgrade).
+  * Resolved Grafana watchdog false restart loop by updating health check for subpath URL routing (`/grafana/api/health`) and persistent `tmux` session supervision.
+  * Verified live status indicators across all 3 services (Aquarium, TeslaMate, Grafana) on the centralized Smart Services Portal (`http://galaxy-a6/` / `http://nexus/`).
+
+
+## [3.4.0] - 2026-09-29
+
+### Deep Abyss Dark Mode, Real Tank Biotope, Outage Duration Tracking & Nexus Central Gateway
+* **Deep Abyss Theme Engine & Day/Night Auto-Sync:**
+  * Implemented an ultra-modern Dark Mode palette (`--bg-base: #060e18`, sapphire cards `#0b192c`, glowing cyan borders `#38bdf8`, neon emerald indicators).
+  * Added a header toggle button cycling `☀️ Light` &rarr; `🌙 Dark` &rarr; `🌓 Auto` with persistence in `localStorage`.
+  * `Auto` mode dynamically synchronizes the visual theme with the aquarium's physical Day/Night cycle.
+* **Real Planted Tank Biotope Animation:**
+  * Modeled strictly on real tank photos (56L Aquatlantis planted aquarium):
+    * Dark volcanic aquasoil gravel bed with layered stones.
+    * Floating surface plants with hanging roots (Phyllanthus / duckweed / Salvinia).
+    * Swaying lush green stem plants (Hygrophila, Bacopa, Staurogyne).
+    * Live inhabitants: Mickey Mouse platy, wavy fan-tail male guppy, school of 4 fry, 2 Siamese Algae Eaters (SAE) with black lateral stripe, grazing red cherry shrimp, and zebra snail (Neritina).
+* **Aviation Beacon Double-Blip Status Indicators:**
+  * Replaced subtle blips with a crisp 1.2-second aviation-style beacon cadence:
+    * **Solid Gray (`#94a3b8`):** Channel inactive / off hours.
+    * **Solid Green (`#10b981`):** Continuous ON conducting state.
+    * **Intermittent Running:** Base green (720ms) + 2 rapid white blips (180ms blip 1, 120ms gap, 180ms blip 2).
+    * **Intermittent Pause:** Base white (720ms) + 2 rapid green blips (180ms blip 1, 120ms gap, 180ms blip 2).
+* **Streamlined Chapter 1 Schedule Editor UX:**
+  * **Channel Deselection:** Tapping an active channel track deselects it (`selectedRelayNum = 0`), returning to a clean overview and showing a gentle helper prompt.
+  * **Compact mm:ss Pulse Inputs:** Replaced bulky separate second inputs with inline formatted `mm:ss` controls (`⏱️ ON: [ 05:00 ]` and `⏸️ OFF: [ 25:00 ]`).
+  * **Schedule Undo / Revert (`[ ↺ Restore ]`):** Dynamically appears when changes are pending, allowing 1-click reverting of unsaved modifications without reloading.
+  * **Mobile-Optimized Icon Toolbar:** Condensed preset management into sleek icon buttons: `💾` Save, `↺` Restore, `✏️` Rename, `➕` New, and `🗑️` Delete.
+  * **Modal Confirmation for Preset Deletion:** Added a dedicated modal dialog preventing accidental preset deletion.
+  * **Safety Cleanups:** Removed risky `[ ⚡ All 24h ]` and `[ ⚪ Clear All ]` buttons that corrupted schedules.
+* **Streamlined Chapter 2 Manual Controls:**
+  * Renamed to **`2. Manual Control`** with a compact segmented toolbar featuring `[ 🍽️ Feed Mode ]` and `[ ⚡ Auto All ]`.
+* **Outage Duration & Fault Type Tracking:**
+  * Firmware accurately calculates outage elapsed duration for both WiFi disconnects and AC power outages.
+  * Dedicated event logging: `[PWR] AC Grid Restored after X outage` (styled bold red in UI) and `[WIFI] Connection Restored after Y outage` (styled amber in UI).
+* **Nexus Gateway & Unified Home Portal:**
+  * Transformed Samsung home server into **`nexus`** with an Nginx reverse proxy listening on port 80 (via Magisk root `iptables` redirection).
+  * Direct port-free URLs: `http://nexus/aquarium`, `http://nexus/teslamate`, `http://nexus/grafana`.
+  * Built the **Nexus Home Portal** on `http://nexus/` featuring 3 glassmorphic cards with live telemetry and online/offline status chips.
+* **Firmware Branding:**
+  * Added footer: `🐠 Aquatlantis Smart Aquarium Controller • Designed & Implemented by Bogdan S. • Firmware v3.4.0`.
+
+---
+
+
+
+### Tailscale Remote Status Indicator & Cross-Platform TeslaMate Ecosystem Link
+* **Aquarium Dashboard Tailscale Status Card:**
+  * Added a dedicated **`TAILSCALE REMOTE`** diagnostic card to the top System Overview.
+  * Displays a live dynamic LED indicator and status text:
+    * 🟢 **`Connected (Remote)`**: When viewing the dashboard directly over Tailscale (`100.83.135.74:8080`).
+    * 🟢 **`100.83.135.74:8080 Ready`**: When viewing locally, confirming that Cinderella's proxy bridge is alive and reachable.
+    * ⚪ **`Local Only`**: When Cinderella's proxy bridge is offline or unreachable.
+  * Tapping the card opens the direct Tailscale remote dashboard link in a new browser tab.
+* **CORS Headers (`Access-Control-Allow-Origin: *`):**
+  * Added CORS headers to `/api/status`, enabling external dashboard widgets, TeslaMate, and cross-origin clients to consume telemetry without browser security blocks.
+* **TeslaMate (Cinderella) Ecosystem Navbar Shortcut:**
+  * Integrated a permanent **`🐠 Acvariu`** entry into the TeslaMate top navigation bar on server Cinderella.
+  * Features an 8px live LED heartbeat checking port 8080 every 10s: turns vibrant green when the aquarium is online and gray if sleeping or offline.
+  * 1-click direct launcher dynamically routes through Tailscale (`100.83.135.74:8080`) or local LAN (`192.168.1.28:8080`) based on user connection context.
+
+---
+
+## [3.3.3] - 2026-09-28
+
+### Professional State Visuals, Dynamic Pulse Blip & Preset Renaming
+* **Chapter 2 Triangle Running Status Icons:**
+  * Replaced the generic green circle with a dynamic triangle running symbol (`▶️`) across all active relay status banners (`▶️ On • Until ...`, `▶️ Running • Pause in ...`).
+  * Combined with `⏸️` for pause intervals and `⚪` for inactive/off channels for instant cognitive clarity.
+* **Chapter 1 Unconfigured Channel (Relay 4) Disconnected / OFF View:**
+  * When a channel has no operating hours scheduled (`active_hours == 0`), the track is styled with `.track-empty` (muted grayed-out slot borders and lowered opacity).
+  * The sticky track label displays a crisp `[OFF]` tag and the track grid features a centered `⚪ All 24h OFF • Click any hour to schedule` notice with pass-through click events.
+* **Smart Standby Dot Animation (100ms Green Blip in Pulse Pause):**
+  * When a relay is within an active pulse schedule hour but currently resting/in pause (`isRelayInPulsePause()`), the channel dot displays a 100ms periodic green radar blip (`blip-green` keyframes every 1.8s) over a neutral gray background.
+  * Dot stays solid constant green (`dot-active`) when conducting and solid gray (`dot-idle`) when fully inactive.
+* **Preset Renaming Workflow (`[ ✏️ Rename ]`):**
+  * Replaced the unused Factory Reset button on the Presets toolbar with an intuitive **`[ ✏️ Rename ]`** button.
+  * Opens `#rename-preset-modal` allowing in-place name edits for active custom presets; persists to LittleFS via `POST /api/presets?rename=<id>&name=<new_name>` and logs the rename event to Event History.
+* **Schedule Dirty Indicator & Quick-Fill Helpers:**
+  * Modifying schedule hours or pulse settings displays `💾 Save Schedule *` with a gentle amber glow, clearly signaling unsaved preset modifications.
+  * Added **`[ ⚡ All 24h ]`** and **`[ ⚪ Clear All ]`** 1-tap quick configuration buttons to the Channel Editing header.
+
+---
+
+## [3.3.2] - 2026-09-28
+
+### Streamlined UI: Unified Presets Toolbar, Direct Track Selection & Chapter Restructuring
+* **Chapter Restructuring & Priority Focus:**
+  * **Chapter 1: 1. 24h Schedule & Real-Time Status:** Promoted schedule timeline and presets to Chapter 1, unifying schedule configuration with live physical state indicators.
+  * **Chapter 2: 2. Manual Overrides & Maintenance:** Dedicated strictly to emergency manual overrides, Feed Mode (10m), Auto All, and actuator toggle cards.
+  * **Chapter 3: 3. Digital Inputs & Sensors:** Unchanged (GPIO 0/4/2/15 digital inputs and A0 light telemetry).
+  * **Chapter 4 & 5 Swap:** Chapter 4 is now **4. Event History** and Chapter 5 is **5. System Administration** (I/O naming, WiFi, OTA).
+* **Live Physical Relay State Dots on Timeline:**
+  * Added 8px status indicator dots (`.timeline-relay-dot`) directly inside the sticky labels on the 24h timeline.
+  * 🟢 **Green (Conducting):** Shows when relay is actively energized / conducting (including active pulse intervals).
+  * ⚫ **Slate Gray (Idle):** Shows when relay is resting or inactive.
+* **Direct Timeline Track Selection (No Tab Clutter):**
+  * Eliminated the 4 separate relay tab buttons (`[ 1. LUMINA ] [ 2. CO2 ] ...`).
+  * Clicking any track row on the timeline directly selects that channel, highlights the track with `.timeline-track-row.selected`, and updates the channel mode and pulse configuration below.
+* **Unified Presets Toolbar & Single Save Button:**
+  * Replaced the confusing multi-button paradigm (*"Save Channel Settings"*, *"Save Preset"*, *"Overwrite Preset"*) with a single, clear **`[ 💾 Save Schedule ]`** button.
+  * Clicking **`[ 💾 Save Schedule ]`** always commits changes to the currently loaded preset:
+    * If on a custom user preset, prompts to overwrite the preset in-place on LittleFS.
+    * If starting from a factory preset or unnamed schedule, prompts to name and save as a new custom preset.
+  * Added **`[ ➕ New Preset ]`** button to create and name a new custom preset at any time.
+  * Selecting any preset in the dropdown immediately loads and applies it across all 4 channels automatically.
+* **Eliminated "Custom Schedule (Modified)" Confusion:**
+  * Modifying schedule hours or pulse settings no longer resets the active preset or injects a temporary entry into the dropdown.
+  * The controller backend (`updateRelayProfile`) and UI stay locked to the currently active preset, guaranteeing that clicking **`[ 💾 Save Schedule ]`** always directly overwrites the active loaded preset in-place.
+
+---
+
+## [3.3.1] - 2026-09-28
+
+### Mobile Touch Timeline Scheduler, Dashboard Hierarchy Consolidation & SVG Power Icon
+* **Mobile Touch-Scrollable 24h Interactive Timeline Scheduler (Option 2):**
+  * Transformed the 4-track multi-relay timeline into the primary interactive schedule editor, eliminating the redundant separate 24-button grid.
+  * Added smooth horizontal swipe scrolling (`overflow-x: auto; -webkit-overflow-scrolling: touch`) with `min-width: 820px`, providing comfortable 28x28px touch targets on mobile displays.
+  * Implemented sticky equipment name labels (`position: sticky; left: 0`) and ruler spacer with backdrop blur, ensuring channel labels stay permanently visible during horizontal scrolling.
+  * Direct tap-to-toggle: tapping any hour slot directly toggles that hour ON/OFF with immediate silent auto-commit (`saveActiveRelayScheduleSilently()`) to ESP8266 RAM/storage.
+  * Automatic horizontal scroll centering on page load: viewport smoothly centers around the current local NTP hour.
+* **Dashboard Chapter Hierarchy Consolidation:**
+  * Clean, logical chapter numbering:
+    * **Top Overview Card:** Diagnostic overview (System Mode, NTP Clock, Uptime, WiFi, RSSI, IP) without chapter number.
+    * **1. Peripheral Status & Control:** Compact actuator cards with 1-tap Auto and Power badges.
+    * **2. 24h Schedule & Presets:** Unified 4-channel timeline scheduler + mode/pulse duration controls + Presets toolbar.
+    * **3. Digital Inputs & Sensors:** Logic inputs and ambient light telemetry.
+    * **4. System Administration:** Feed mode, custom peripheral naming modal, WiFi configuration.
+    * **5. Event History:** Timestamped operational log.
+* **Cross-Platform SVG Power Button Icon:**
+  * Replaced Unicode glyph `⏻` (U+23FB) with an inline crisp SVG vector icon, resolving the `[X]` missing character box on Android/Chrome mobile devices.
+* **Clean Peripheral Names (User Choice):**
+  * Removed hardcoded emoji prefixes (`🐟`, `🦐`, `🫧`, `🐚`) from relay tabs and labels; user has 100% control over equipment naming in "Customize I/O Names" (with emoji support).
+  * Removed maritime helm icon (`☸️`) from peripheral card headers.
+* **Aquatic Animation Directional Swimming Fix:**
+  * Re-engineered fish animation keyframes with strict directional orientation: `scaleX(-1)` when swimming right, `scaleX(1)` when swimming left, ensuring fish ALWAYS swim head-first.
+  * Added boundary wall turns and mid-water direction changes across 6 distinct aquatic creatures (tropical fish, goldfish, blowfish, shrimp, dolphin, sea turtle).
+
+---
+
 ## [3.3.0] - 2026-09-28
 
 ### Direct Preset Overwrite, 24h Visual Infographic Timeline & Vibrant Aquatic Theme Overhaul

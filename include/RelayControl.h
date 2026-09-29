@@ -76,11 +76,13 @@ String getIONamesJSON();
 // User Presets API
 int saveUserPreset(const String& name);
 bool overwriteUserPreset(int id);
+bool renameUserPreset(int id, const String& newName);
 bool applyUserPreset(int id);
 bool deleteUserPreset(int id);
 String getPresetsJSON();
 int getActivePresetId();
 void setActivePresetId(int id);
+bool isRelayInPulsePause(int relayNum);
 
 // Smart Feeding Mode API (Temporarily suspends aeration/filtration so food settles)
 void setFeedMode(bool active, uint32_t durationSec = 600);
@@ -103,5 +105,6 @@ String getTelemetryJSON();
 
 // Helper to convert SystemMode to string
 String getModeString(SystemMode mode);
+String formatDuration(uint32_t seconds);
 
 #endif // RELAY_CONTROL_H

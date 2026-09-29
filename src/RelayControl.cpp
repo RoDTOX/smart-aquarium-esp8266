@@ -363,6 +363,23 @@ bool overwriteUserPreset(int id) {
     return true;
 }
 
+bool renameUserPreset(int id, const String& newName) {
+    int idx = id - 100;
+    if (idx < 0 || idx >= MAX_USER_PRESETS || !userPresets[idx].active) {
+        return false;
+    }
+    String trimmed = newName;
+    trimmed.trim();
+    if (trimmed.length() == 0) return false;
+    
+    String oldName = String(userPresets[idx].name);
+    strncpy(userPresets[idx].name, trimmed.c_str(), 31);
+    userPresets[idx].name[31] = '\0';
+    saveUserPresetsToFS();
+    logSystemEvent("Preset renamed: \"" + oldName + "\" -> \"" + trimmed + "\"");
+    return true;
+}
+
 bool applyUserPreset(int id) {
     int idx = id - 100;
     if (idx < 0 || idx >= MAX_USER_PRESETS || !userPresets[idx].active) {
@@ -387,7 +404,7 @@ bool deleteUserPreset(int id) {
     memset(userPresets[idx].name, 0, sizeof(userPresets[idx].name));
     saveUserPresetsToFS();
     if (activePresetId == id) {
-        setActivePresetId(0);
+        setActivePresetId(1);
     }
     logSystemEvent("Preset deleted: \"" + deletedName + "\"");
     return true;
@@ -529,9 +546,9 @@ String getRelayStatusDescription(int relayNum) {
                 }
             }
             if (nextOffHour != -1) {
-                return "🟢 On • Until " + String(nextOffHour) + ":00";
+                return "▶️ On • Until " + String(nextOffHour) + ":00";
             } else {
-                return "🟢 Running 24/7";
+                return "▶️ Running 24/7";
             }
         } else {
             // Pulse Mode
@@ -547,7 +564,7 @@ String getRelayStatusDescription(int relayNum) {
             }
             
             if (relayPulseState[idx]) {
-                return "🟢 Running • Pause in " + remStr;
+                return "▶️ Running • Pause in " + remStr;
             } else {
                 return "⏸️ In Pause • Resumes in " + remStr;
             }
@@ -567,6 +584,16 @@ String getRelayStatusDescription(int relayNum) {
             return "⚪ Off • No schedule active";
         }
     }
+}
+
+bool isRelayInPulsePause(int relayNum) {
+    if (relayNum < 1 || relayNum > 4) return false;
+    int idx = relayNum - 1;
+    if (relays[idx].manualOverride) return false;
+    int currentHour = getCurrentHour();
+    int hr = (currentHour >= 0 && currentHour <= 23) ? currentHour : 12;
+    bool isHourActive = (profiles[idx].activeHours & (1UL << hr)) != 0;
+    return isHourActive && (profiles[idx].behavior == BEHAVIOR_PULSE) && !relayPulseState[idx];
 }
 
 RelayProfile getRelayProfile(int relayNum) {
@@ -618,7 +645,6 @@ void updateRelayProfile(int relayNum, uint32_t activeHours, uint8_t behavior, ui
     profiles[relayNum - 1].pulseOnSec = pulseOnSec;
     profiles[relayNum - 1].pulseOffSec = pulseOffSec;
     
-    setActivePresetId(0); // Custom schedule
     saveSettingsToEEPROM();
     String rName = getRelayCustomName(relayNum);
     String behStr;
@@ -846,4 +872,18 @@ String getTelemetryJSON() {
     }
     r += "]";
     return r;
+}
+
+String formatDuration(uint32_t seconds) {
+    if (seconds < 60) {
+        return String(seconds) + "s";
+    }
+    uint32_t m = seconds / 60;
+    uint32_t s = seconds % 60;
+    if (m < 60) {
+        return String(m) + "m " + (s < 10 ? "0" : "") + String(s) + "s";
+    }
+    uint32_t h = m / 60;
+    m = m % 60;
+    return String(h) + "h " + (m < 10 ? "0" : "") + String(m) + "m";
 }

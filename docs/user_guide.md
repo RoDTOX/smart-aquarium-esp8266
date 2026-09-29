@@ -73,16 +73,20 @@ The 24h schedule configuration, live physical telemetry, and presets are unified
   * When a channel has no hours configured (e.g. Relay 4), the track row is styled muted gray (`.track-empty`), displays an `[OFF]` tag, and shows a centered `⚪ All 24h OFF • Click any hour to schedule` notice.
 * **1-Tap Quick Fill Controls:** Under the timeline, click **`[ ⚡ All 24h ]`** to activate all 24 hours or **`[ ⚪ Clear All ]`** to clear the selected channel in a single tap.
 * **Auto-Scroll to Current Hour:** On page load, the view automatically centers around the current local NTP hour.
-* **Direct Tap-to-Toggle:** Tapping any hour slot directly toggles that hour ON or OFF and immediately synchronizes to the ESP8266 controller (`saveActiveRelayScheduleSilently()`).
+* **Tap-to-Toggle with Draft:** Tapping any hour slot toggles that hour ON or OFF in a local draft. An amber bar then shows *"Unsaved schedule changes"* with:
+  * **`✓ Apply to device`**: sends all 4 channels to the ESP8266 in one request (one flash write, one `Schedule saved` log entry).
+  * **`↺ Discard`**: reverts the draft to the schedule currently running on the device.
+  * Leaving the page or loading another preset while a draft is pending asks for confirmation first.
+* **Keyboard:** Hour slots can be focused with Tab; the arrow keys move between hours and channels, and Enter/Space toggles the hour.
 * **Direct Track Row Selection:** Tapping any track row selects that channel for configuring active mode and pulse durations below (no separate channel tab buttons).
 * **Visual Coding:** Continuous active hours are rendered with solid vibrant gradient bars; Intermittent/Pulse hours feature high-contrast diagonal stripes (`repeating-linear-gradient`).
 * **Real-Time "NOW" Indicator:** A vertical red tracking line with a live numeric pin displays current local time.
 
 ### Unified Preset Toolbar & Rename Workflow
-* **1-Click Preset Loading:** Selecting any preset from the dropdown automatically applies it immediately across all 4 channels without extra confirmation steps.
+* **1-Click Preset Loading:** Selecting any preset from the dropdown applies it immediately across all 4 channels (a confirmation is shown only if you have unsaved draft changes).
 * **Single "💾 Save Schedule" Button:**
   * When modifications are made, the button shows **`💾 Save Schedule *`** with a subtle amber glow indicating unsaved preset changes.
-  * If working on an active custom preset, clicking **"💾 Save Schedule"** prompts: *"Save current schedule and overwrite preset '<Name>'?"*. Confirming updates all 4 channels and overwrites the preset in-place on LittleFS.
+  * If working on an active custom preset, clicking **"💾 Save Schedule"** asks to overwrite preset '<Name>'. Confirming applies the draft to the device and overwrites the preset in-place on LittleFS.
   * If starting from a factory preset or unnamed schedule, prompts to name and save as a new custom preset.
 * **"✏️ Rename" Button:** Appears whenever a custom preset is active, opening a dialog to rename the preset in-place on LittleFS.
 * **"➕ New Preset" Button:** Opens a modal dialog allowing you to name and save the current timeline settings as a brand new preset at any time.
@@ -139,7 +143,7 @@ Update firmware wirelessly through any browser:
   * Multi-stream dynamic rising bubbles (micro, small, medium, and 3D glass globes with realistic sinusoidal wobble).
   * Inhabitants with strict head-first swimming direction: Mickey Mouse platy, male guppy with undulating fan tail, fry school, Siamese Algae Eaters with horizontal black stripe, red cherry shrimp, and zebra snail.
 * **Aviation Double-Blip Status Dots:** In pulse mode, relays blink with a high-visibility double-blip sequence (green/white running, white/green pause) on a 1.2-second cycle.
-* **Outage Duration Tracking:** Automatically measures and logs duration when AC grid power is cut or restored (`[PWR] AC Grid Restored after X outage` in bold red) and when WiFi reconnects (`[WIFI] Connection Restored after Y outage` in amber).
+* **Outage Duration Tracking:** Automatically measures and logs duration when AC grid power is cut or restored (`[PWR] Power Outage Detected` in bold red, `[PWR] AC Grid Restored after X outage` in green) and when WiFi reconnects (`[WIFI] Connection Restored after Y outage` in green).
 
 ---
 

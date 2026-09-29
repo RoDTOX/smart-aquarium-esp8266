@@ -137,7 +137,9 @@ Controls Feeding Mode:
 
 ### `GET /api/schedule` & `POST /api/schedule`
 * `GET`: Returns the array of 4 relay profiles.
-* `POST`: Saves schedule for specified relay:
+* `POST` (batch, used by the dashboard): saves all 4 relays in a single request, with a single flash write and a single log entry (written only if something changed):
+  * `r1_hours`, `r1_behavior`, `r1_on`, `r1_off` ... `r4_hours`, `r4_behavior`, `r4_on`, `r4_off`
+* `POST` (legacy, single relay):
   * `relay=[1-4]`
   * `active_hours=[bitmap 24h]`
   * `behavior=[0|1]` (0 = continuous, 1 = pulse)
@@ -148,6 +150,10 @@ Controls Feeding Mode:
 Manual override configuration:
 * `clear=1`: Resets all relays to automatic schedule.
 * `relay=[1-4]&override=[0|1]&state=[0|1]`: Sets manual forced state.
+
+### `GET /api/status` - `history_rev`
+The status payload includes `history_rev`, a counter incremented on every logged event.
+The dashboard refetches `/api/history` only when this value changes.
 
 ### `GET /api/history`
 Returns event logs in compact single-line format (`DD.MM HH:MM:SS`):

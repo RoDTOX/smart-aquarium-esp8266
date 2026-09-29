@@ -72,3 +72,6 @@ compile_commands.json
 
 # Agent Workspace
 .agent/
+
+# Generated dashboard header (tools/build_web.py)
+include/dashboard_html_gz.h

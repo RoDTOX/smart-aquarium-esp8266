@@ -92,10 +92,12 @@ uint32_t getFeedModeRemainingSec();
 // Get and update individual relay profile settings
 RelayProfile getRelayProfile(int relayNum);
 void updateRelayProfile(int relayNum, uint32_t activeHours, uint8_t behavior, uint32_t pulseOnSec, uint32_t pulseOffSec);
+void updateAllRelayProfiles(const RelayProfile newProfiles[4]);
 
 // Event Logging API
 void logSystemEvent(const String& msg);
 String getHistoryJSON();
+uint32_t getHistoryRevision();
 String getSchedulesJSON();
 
 // Telemetry API
@@ -106,5 +108,8 @@ String getTelemetryJSON();
 // Helper to convert SystemMode to string
 String getModeString(SystemMode mode);
 String formatDuration(uint32_t seconds);
+
+// Escapes a string for embedding inside a JSON string literal
+String jsonEscape(const String& in);
 
 #endif // RELAY_CONTROL_H

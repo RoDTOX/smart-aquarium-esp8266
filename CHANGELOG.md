@@ -3,6 +3,35 @@
 All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [3.5.0] - 2026-09-29
+
+### UI/UX Review Fixes: Schedule Drafts, Dark Mode Contrast, Robust JSON & Gzipped Dashboard
+* **Schedule editing is now a local draft:**
+  * Tapping hour blocks or changing mode/pulse timing no longer writes to flash on every tap.
+  * A draft bar shows unsaved changes with **Discard** (real undo) and **Apply to device**.
+  * All 4 channels are committed in one request (`POST /api/schedule` batch form): one flash write and one `Schedule saved` log entry, so outage events are no longer pushed out of the 15-entry log.
+  * Switching presets with unsaved changes asks for confirmation; leaving the page warns too.
+* **Dark mode contrast:** relay cards, GPIO tags and status banners were hard-coded light colours (white text on light grey). They now have proper dark variants.
+* **Colour semantics:** manual override has its own violet banner (✋) instead of red for "Forced ON"; "Restored" events are green instead of red; the schedule legend uses neutral swatches because each channel has its own colour.
+* **Robustness & security:**
+  * Added `jsonEscape()` for names, presets, history, SSID and status text. A `"` in a name no longer breaks the JSON and freezes the dashboard.
+  * The dashboard renders all device-provided text with `textContent` / HTML escaping (no HTML injection through names).
+  * Custom names are always NUL-terminated.
+* **Performance:**
+  * Dashboard moved to `web/index.html` and served gzipped (~136 KB -> ~27 KB) via `tools/build_web.py`; firmware flash usage dropped ~108 KB.
+  * Removed the Google Fonts dependency so the page works offline and in AP mode.
+  * Status polling never overlaps, pauses in background tabs, and updates relay cards in place instead of rebuilding them every 2 s.
+  * Event history is refetched only when `history_rev` changes.
+  * The device shows "Device unreachable" after 2 failed polls.
+* **Accessibility & polish:**
+  * Keyboard support: hour slots (arrow keys + Enter/Space), channel labels, the Nexus tile, Escape and backdrop click close dialogs, and visible focus rings.
+  * `prefers-reduced-motion` disables the decorative animations; toasts are announced via `aria-live`.
+  * Larger hour slots on touch screens; mobile header/legend wrap cleanly; all 7 overview tiles fit on one desktop row.
+  * Styled confirm dialog replaces native `confirm()`; toast timer no longer cuts consecutive messages short.
+  * Power sensor shows `Mains OK` / `Power lost`; aux inputs show a neutral dot for LOW; uptime shows days.
+  * `Auto` theme now follows the main light schedule (dark while the light is scheduled off).
+  * Consistent default channel names; Nexus addresses grouped in one `NEXUS` config object (probe every 30 s).
+
 ## [3.4.1] - 2026-09-29
 
 ### Visual & Aesthetic Overhaul: Anatomical Swimming Physics, Deep Abyss Dark Mode & Multi-Stream Bubbles

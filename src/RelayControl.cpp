@@ -25,6 +25,38 @@ static unsigned long relayLastToggle[4] = {0, 0, 0, 0};
 static bool wasHourActive[4] = {false, false, false, false};
 static SystemMode lastExecutedMode = MODE_DAY;
 
+// Incremented on every logged event so clients can refetch history only on change
+static uint32_t historyRevision = 0;
+
+// Escapes a string for safe embedding inside a JSON string literal
+String jsonEscape(const String& in) {
+    String out;
+    out.reserve(in.length() + 8);
+    for (size_t i = 0; i < in.length(); i++) {
+        char c = in.charAt(i);
+        switch (c) {
+            case '"':  out += "\\\""; break;
+            case '\\': out += "\\\\"; break;
+            case '\n': out += "\\n"; break;
+            case '\r': out += "\\r"; break;
+            case '\t': out += "\\t"; break;
+            default:
+                if ((uint8_t)c < 0x20) {
+                    char buf[8];
+                    snprintf(buf, sizeof(buf), "\\u%04x", (uint8_t)c);
+                    out += buf;
+                } else {
+                    out += c;
+                }
+        }
+    }
+    return out;
+}
+
+uint32_t getHistoryRevision() {
+    return historyRevision;
+}
+
 // Helper to write physically to GPIO
 static void writePhysicalRelay(int relayNum, bool active) {
     int pin = -1;
@@ -94,6 +126,7 @@ void logSystemEvent(const String& msg) {
     String line = "[" + t + "] " + msg;
     
     Serial.printf("[SYSTEM LOG] %s\n", line.c_str());
+    historyRevision++;
     
     // Open log file in append mode
     File f = LittleFS.open("/log.txt", "a");
@@ -249,15 +282,15 @@ String getIONamesJSON() {
     String r = "{";
     r += "\"relays\":[";
     for (int i = 0; i < 4; i++) {
-        r += "\"" + String(customNames.relays[i]) + "\"";
+        r += "\"" + jsonEscape(String(customNames.relays[i])) + "\"";
         if (i < 3) r += ",";
     }
     r += "],\"inputs\":[";
     for (int i = 0; i < 4; i++) {
-        r += "\"" + String(customNames.digitalInputs[i]) + "\"";
+        r += "\"" + jsonEscape(String(customNames.digitalInputs[i])) + "\"";
         if (i < 3) r += ",";
     }
-    r += "],\"analog\":\"" + String(customNames.analogInput) + "\"}";
+    r += "],\"analog\":\"" + jsonEscape(String(customNames.analogInput)) + "\"}";
     return r;
 }
 
@@ -418,7 +451,7 @@ String getPresetsJSON() {
     
     for (int i = 0; i < MAX_USER_PRESETS; i++) {
         if (userPresets[i].active) {
-            r += ",{\"id\":" + String(100 + i) + ",\"name\":\"" + String(userPresets[i].name) + "\",\"builtin\":false}";
+            r += ",{\"id\":" + String(100 + i) + ",\"name\":\"" + jsonEscape(String(userPresets[i].name)) + "\",\"builtin\":false}";
         }
     }
     r += "]";
@@ -658,6 +691,25 @@ void updateRelayProfile(int relayNum, uint32_t activeHours, uint8_t behavior, ui
     logSystemEvent("Schedule saved: " + rName + " [" + behStr + "]");
 }
 
+// Updates all 4 relay profiles at once: a single config write and a single log entry
+void updateAllRelayProfiles(const RelayProfile newProfiles[4]) {
+    String changed;
+    for (int i = 0; i < 4; i++) {
+        const RelayProfile& a = profiles[i];
+        const RelayProfile& b = newProfiles[i];
+        if (a.activeHours != b.activeHours || a.behavior != b.behavior ||
+            a.pulseOnSec != b.pulseOnSec || a.pulseOffSec != b.pulseOffSec) {
+            if (changed.length() > 0) changed += ", ";
+            changed += getRelayCustomName(i + 1);
+        }
+        profiles[i] = b;
+    }
+    if (changed.length() == 0) return; // nothing changed: no flash write, no log entry
+
+    saveSettingsToEEPROM();
+    logSystemEvent("Schedule saved: " + changed);
+}
+
 String getHistoryJSON() {
     if (!LittleFS.exists("/log.txt")) {
         return "[]";
@@ -695,12 +747,9 @@ String getHistoryJSON() {
         if (!first) r += ",";
         first = false;
         
-        // Escape quotes to prevent invalid JSON
-        msg.replace("\"", "\\\"");
-        
         r += "{";
-        r += "\"time\":\"" + timestamp + "\",";
-        r += "\"msg\":\"" + msg + "\"";
+        r += "\"time\":\"" + jsonEscape(timestamp) + "\",";
+        r += "\"msg\":\"" + jsonEscape(msg) + "\"";
         r += "}";
     }
     f.close();

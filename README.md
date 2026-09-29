@@ -70,7 +70,11 @@ smart-aquarium-esp8266/
 ├── src/
 │   ├── NetworkSync.cpp  <-- WiFi manager, NTP state machine, status LED blink patterns
 │   ├── RelayControl.cpp <-- Rolling logger, LittleFS persistence (/names.cfg, /user_presets.cfg)
-│   └── main.cpp         <-- Arduino setup/loop, REST APIs, SSDP/NetBIOS, Dashboard Web UI
+│   └── main.cpp         <-- Arduino setup/loop, REST APIs, SSDP/NetBIOS, serves the dashboard
+├── web/
+│   └── index.html       <-- Dashboard Web UI (edit here; gzipped into flash at build time)
+├── tools/
+│   └── build_web.py     <-- PlatformIO pre-build script: web/index.html -> include/dashboard_html_gz.h
 └── platformio.ini       <-- PlatformIO configuration file targeting ESP-12E board
 ```
 

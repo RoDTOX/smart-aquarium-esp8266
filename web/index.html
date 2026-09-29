@@ -1,0 +1,3471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aquatlantis | Smart Aquarium</title>
+    <style>
+        :root {
+            --bg-base: #0284c7;
+            --bg-gradient: linear-gradient(180deg, #7dd3fc 0%, #38bdf8 12%, #0ea5e9 32%, #0284c7 62%, #0369a1 88%, #075985 100%);
+            --bg-surface: rgba(255, 255, 255, 0.72);
+            --bg-card: rgba(255, 255, 255, 0.78);
+            --text-primary: #0f172a;
+            --text-secondary: #334155;
+            --text-muted: #64748b;
+            --accent-primary: #0284c7;
+            --accent-primary-glow: rgba(2, 132, 199, 0.35);
+            --ocean-blue: #0284c7;
+            --ocean-deep: #0369a1;
+            --state-ok: #10b981;
+            --state-ok-glow: rgba(16, 185, 129, 0.35);
+            --state-warn: #f59e0b;
+            --state-warn-glow: rgba(245, 158, 11, 0.35);
+            --state-danger: #ef4444;
+            --state-danger-glow: rgba(239, 68, 68, 0.35);
+            --border-color: rgba(255, 255, 255, 0.85);
+            --border-subtle: rgba(2, 132, 199, 0.18);
+            --track-bg: rgba(0, 0, 0, 0.04);
+            --slot-off-bg: rgba(255, 255, 255, 0.55);
+            --slot-off-border: rgba(148, 163, 184, 0.4);
+            --label-bg: rgba(255, 255, 255, 0.96);
+            --modal-bg: rgba(255, 255, 255, 0.95);
+            --input-bg: rgba(255, 255, 255, 0.9);
+            --btn-bg: rgba(255, 255, 255, 0.85);
+        }
+
+        [data-theme="dark"] {
+            --bg-base: #060e18;
+            --bg-gradient: linear-gradient(180deg, #091728 0%, #06111f 25%, #040c17 60%, #02070e 100%);
+            --bg-surface: rgba(11, 26, 44, 0.82);
+            --bg-card: rgba(13, 31, 53, 0.86);
+            --text-primary: #f8fafc;
+            --text-secondary: #cbd5e1;
+            --text-muted: #94a3b8;
+            --accent-primary: #38bdf8;
+            --accent-primary-glow: rgba(56, 189, 248, 0.4);
+            --ocean-blue: #38bdf8;
+            --ocean-deep: #7dd3fc;
+            --state-ok: #10b981;
+            --state-ok-glow: rgba(16, 185, 129, 0.5);
+            --state-warn: #fbbf24;
+            --state-warn-glow: rgba(251, 191, 36, 0.5);
+            --state-danger: #f87171;
+            --state-danger-glow: rgba(248, 113, 113, 0.5);
+            --border-color: rgba(56, 189, 248, 0.26);
+            --border-subtle: rgba(56, 189, 248, 0.14);
+            --track-bg: rgba(0, 0, 0, 0.38);
+            --slot-off-bg: rgba(15, 23, 42, 0.65);
+            --slot-off-border: rgba(51, 65, 85, 0.65);
+            --label-bg: rgba(13, 31, 53, 0.95);
+            --modal-bg: rgba(11, 26, 44, 0.96);
+            --input-bg: rgba(15, 23, 42, 0.85);
+            --btn-bg: rgba(15, 23, 42, 0.75);
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: var(--bg-gradient);
+            background-attachment: fixed;
+            color: var(--text-primary);
+            padding: 16px 12px 90px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+            transition: background 0.4s ease, color 0.3s ease;
+        }
+        
+        /* Sunbeams / God rays radiating from water surface */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-conic-gradient(from 180deg at 50% -70px, rgba(255, 255, 255, 0.18) 0deg, rgba(255, 255, 255, 0.02) 11deg, rgba(255, 255, 255, 0.18) 22deg);
+            mask-image: linear-gradient(180deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.3) 45%, transparent 75%);
+            -webkit-mask-image: linear-gradient(180deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.3) 45%, transparent 75%);
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.8;
+        }
+        [data-theme="dark"] body::before {
+            background: repeating-conic-gradient(from 180deg at 50% -70px, rgba(56, 189, 248, 0.12) 0deg, rgba(2, 132, 199, 0.01) 11deg, rgba(56, 189, 248, 0.12) 22deg);
+            opacity: 0.55;
+        }
+        
+        /* Floating animated bubbles */
+        .bubbles-layer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 1;
+        }
+        .bubble {
+            position: absolute;
+            bottom: -50px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 34% 32%, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.32) 48%, rgba(255,255,255,0.05) 72%, rgba(255,255,255,0.65) 100%);
+            box-shadow: inset 0 0 5px rgba(255,255,255,0.75), 0 0 6px rgba(56, 189, 248, 0.3);
+            pointer-events: none;
+            will-change: transform, opacity;
+        }
+        [data-theme="dark"] .bubble {
+            background: radial-gradient(circle at 34% 32%, rgba(255,255,255,0.96) 0%, rgba(224,242,254,0.38) 45%, rgba(56,189,248,0.08) 72%, rgba(56,189,248,0.7) 100%);
+            box-shadow: inset 0 0 6px rgba(255,255,255,0.85), 0 0 9px rgba(56, 189, 248, 0.45);
+        }
+        .bubble-wobble-1 { animation: riseWobble1 linear infinite; }
+        .bubble-wobble-2 { animation: riseWobble2 linear infinite; }
+        .bubble-fast { animation: riseFastMicro linear infinite; }
+
+        @keyframes riseWobble1 {
+            0%   { transform: translateY(0) translateX(0) scale(0.65); opacity: 0; }
+            8%   { opacity: 0.9; }
+            30%  { transform: translateY(-36vh) translateX(-12px) scale(0.85); }
+            65%  { transform: translateY(-72vh) translateX(10px) scale(1.02); }
+            88%  { opacity: 0.85; }
+            100% { transform: translateY(-118vh) translateX(-6px) scale(1.15); opacity: 0; }
+        }
+        @keyframes riseWobble2 {
+            0%   { transform: translateY(0) translateX(0) scale(0.65); opacity: 0; }
+            8%   { opacity: 0.9; }
+            30%  { transform: translateY(-36vh) translateX(14px) scale(0.85); }
+            65%  { transform: translateY(-72vh) translateX(-10px) scale(1.02); }
+            88%  { opacity: 0.85; }
+            100% { transform: translateY(-118vh) translateX(8px) scale(1.15); opacity: 0; }
+        }
+        @keyframes riseFastMicro {
+            0%   { transform: translateY(0) translateX(0) scale(0.6); opacity: 0; }
+            10%  { opacity: 0.85; }
+            45%  { transform: translateY(-52vh) translateX(7px) scale(0.85); }
+            85%  { opacity: 0.85; }
+            100% { transform: translateY(-118vh) translateX(-4px) scale(1.0); opacity: 0; }
+        }
+
+        /* Natural Volcanic Aquasoil Substrate Bed (from user's real tank photo) */
+        .aquasoil-bed {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 52px;
+            pointer-events: none;
+            z-index: 1;
+            background: linear-gradient(180deg, transparent 0%, rgba(45, 27, 20, 0.35) 25%, rgba(24, 15, 11, 0.75) 60%, #150d09 100%);
+            box-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.4);
+        }
+        [data-theme="dark"] .aquasoil-bed {
+            background: linear-gradient(180deg, transparent 0%, rgba(15, 9, 6, 0.5) 25%, rgba(10, 6, 4, 0.85) 60%, #050302 100%);
+        }
+
+        /* Floating Plant Roots Fringe at Surface (Salvinia / Frogbit) */
+        .floating-roots-layer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 48px;
+            pointer-events: none;
+            z-index: 1;
+            overflow: hidden;
+            opacity: 0.85;
+        }
+        .roots-svg {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        /* Swaying Aquatic Plants (Staurogyne / Ludwigia / Vallisneria) */
+        .plants-layer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 280px;
+            pointer-events: none;
+            z-index: 1;
+            overflow: hidden;
+        }
+        .plant {
+            position: absolute;
+            bottom: 0;
+            height: 260px;
+            width: 120px;
+            transform-origin: bottom center;
+            opacity: 0.65;
+            transition: opacity 0.3s;
+        }
+        .plant-left {
+            left: 0;
+            animation: swayPlantLeft 7s ease-in-out infinite;
+        }
+        .plant-right {
+            right: 0;
+            animation: swayPlantRight 8.5s ease-in-out infinite 1s;
+        }
+        [data-theme="dark"] .plant {
+            opacity: 0.42;
+            filter: brightness(0.85) drop-shadow(0 0 8px rgba(34, 197, 94, 0.2));
+        }
+        @keyframes swayPlantLeft {
+            0%, 100% { transform: rotate(0deg) skewX(0deg); }
+            50% { transform: rotate(3deg) skewX(2.5deg); }
+        }
+        @keyframes swayPlantRight {
+            0%, 100% { transform: rotate(0deg) skewX(0deg); }
+            50% { transform: rotate(-3.5deg) skewX(-3deg); }
+        }
+
+        /* Realistic Inhabitants (Strictly swimming head-first: scaleX(-1)=heading Right, scaleX(1)=heading Left) */
+        .critter {
+            position: fixed;
+            pointer-events: none;
+            z-index: 1;
+            filter: drop-shadow(0 3px 5px rgba(0,0,0,0.18));
+            opacity: 0.9;
+            will-change: transform, left;
+        }
+        [data-theme="dark"] .critter {
+            filter: drop-shadow(0 0 6px rgba(56, 189, 248, 0.35));
+        }
+
+        /* Guppy tail wave motion */
+        .guppy-tail {
+            transform-origin: 36px 14px;
+            animation: guppyTailWave 0.8s ease-in-out infinite alternate;
+        }
+        @keyframes guppyTailWave {
+            0% { transform: scaleY(1.0) rotate(0deg); }
+            100% { transform: scaleY(0.82) rotate(-8deg); }
+        }
+
+        /* Critter Positions & Trajectories */
+        .critter-mickey {
+            top: 65%;
+            animation: swimCritterMickey 26s ease-in-out infinite;
+        }
+        .critter-guppy {
+            top: 26%;
+            animation: swimCritterGuppy 32s ease-in-out infinite 2s;
+        }
+        .critter-fry {
+            top: 15%;
+            animation: swimCritterFry 22s ease-in-out infinite 0.5s;
+        }
+        .critter-sae-1 {
+            top: 42%;
+            animation: swimCritterSAE1 28s ease-in-out infinite 4s;
+        }
+        .critter-sae-2 {
+            top: 78%;
+            animation: swimCritterSAE2 34s ease-in-out infinite 9s;
+        }
+        .critter-shrimp {
+            bottom: 40px;
+            animation: roamShrimp 38s ease-in-out infinite;
+        }
+        .critter-snail {
+            bottom: 12px;
+            left: 24%;
+            opacity: 0.82;
+            animation: crawlSnail 60s linear infinite alternate;
+        }
+
+        /* Swimming Trajectories: Heading Right = scaleX(-1), Heading Left = scaleX(1) */
+        @keyframes swimCritterMickey {
+            0%   { left: 3%; transform: scaleX(-1) translateY(0); }
+            47%  { left: calc(100% - 60px); transform: scaleX(-1) translateY(-12px); }
+            50%  { left: calc(100% - 60px); transform: scaleX(1) translateY(-12px); }
+            97%  { left: 3%; transform: scaleX(1) translateY(10px); }
+            100% { left: 3%; transform: scaleX(-1) translateY(0); }
+        }
+        @keyframes swimCritterGuppy {
+            0%   { left: calc(100% - 65px); transform: scaleX(1) translateY(0); }
+            47%  { left: 4%; transform: scaleX(1) translateY(14px); }
+            50%  { left: 4%; transform: scaleX(-1) translateY(14px); }
+            97%  { left: calc(100% - 65px); transform: scaleX(-1) translateY(-10px); }
+            100% { left: calc(100% - 65px); transform: scaleX(1) translateY(0); }
+        }
+        @keyframes swimCritterFry {
+            0%   { left: 6%; transform: scaleX(-1) translateY(0); }
+            46%  { left: calc(100% - 50px); transform: scaleX(-1) translateY(-8px); }
+            50%  { left: calc(100% - 50px); transform: scaleX(1) translateY(-8px); }
+            96%  { left: 6%; transform: scaleX(1) translateY(6px); }
+            100% { left: 6%; transform: scaleX(-1) translateY(0); }
+        }
+        @keyframes swimCritterSAE1 {
+            0%   { left: 2%; transform: scaleX(-1) translateY(0); }
+            42%  { left: 75%; transform: scaleX(-1) translateY(-14px); }
+            46%  { left: 75%; transform: scaleX(1) translateY(-14px); }
+            70%  { left: 32%; transform: scaleX(1) translateY(8px); }
+            74%  { left: 32%; transform: scaleX(1) translateY(8px); }
+            96%  { left: 2%; transform: scaleX(1) translateY(0); }
+            100% { left: 2%; transform: scaleX(-1) translateY(0); }
+        }
+        @keyframes swimCritterSAE2 {
+            0%   { left: calc(100% - 65px); transform: scaleX(1) translateY(0); }
+            47%  { left: 5%; transform: scaleX(1) translateY(8px); }
+            50%  { left: 5%; transform: scaleX(-1) translateY(8px); }
+            97%  { left: calc(100% - 65px); transform: scaleX(-1) translateY(-8px); }
+            100% { left: calc(100% - 65px); transform: scaleX(1) translateY(0); }
+        }
+        @keyframes roamShrimp {
+            0%   { left: 14%; transform: scaleX(-1) translateY(0); }
+            46%  { left: 72%; transform: scaleX(-1) translateY(-10px); }
+            50%  { left: 72%; transform: scaleX(1) translateY(-10px); }
+            96%  { left: 14%; transform: scaleX(1) translateY(0); }
+            100% { left: 14%; transform: scaleX(-1) translateY(0); }
+        }
+        @keyframes crawlSnail {
+            0%   { left: 24%; transform: translateY(0); }
+            100% { left: 32%; transform: translateY(-2px); }
+        }
+        
+        .container {
+            max-width: 900px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            position: relative;
+            z-index: 2;
+        }
+        
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            padding: 14px 20px;
+            border-radius: 16px;
+            border: 1.5px solid var(--border-color);
+            box-shadow: 0 8px 24px rgba(2, 132, 199, 0.15);
+        }
+        [data-theme="dark"] header {
+            background: rgba(10, 24, 43, 0.88);
+            border-color: rgba(56, 189, 248, 0.28);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(56, 189, 248, 0.08);
+        }
+        
+        h1 {
+            font-size: 22px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #0284c7, #0369a1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .sys-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            font-weight: 700;
+            padding: 6px 12px;
+            border-radius: 9999px;
+            background: rgba(255, 255, 255, 0.85);
+            border: 1.5px solid rgba(16, 185, 129, 0.4);
+            color: #065f46;
+            box-shadow: 0 2px 6px rgba(16, 185, 129, 0.15);
+        }
+        [data-theme="dark"] .sys-badge {
+            background: rgba(6, 78, 59, 0.4);
+            border-color: rgba(16, 185, 129, 0.5);
+            color: #34d399;
+            box-shadow: 0 0 12px rgba(16, 185, 129, 0.25);
+        }
+        
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+            flex-shrink: 0;
+        }
+        
+        @keyframes pulse-green {
+            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5); }
+            70% { box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+        @keyframes pulse-orange {
+            0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.5); }
+            70% { box-shadow: 0 0 0 6px rgba(245, 158, 11, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
+        }
+        @keyframes pulse-red {
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.5); }
+            70% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+        
+        .dot-green { background-color: var(--state-ok); animation: pulse-green 2s infinite; }
+        .dot-orange { background-color: var(--state-warn); animation: pulse-orange 2s infinite; }
+        .dot-red { background-color: var(--state-danger); animation: pulse-red 2s infinite; }
+        .status-dot.dot-idle { background-color: #94a3b8; }
+        
+        .card {
+            background: var(--bg-card);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border-radius: 16px;
+            border: 1.5px solid var(--border-color);
+            padding: 18px;
+            box-shadow: 0 10px 30px rgba(2, 132, 199, 0.16), 0 2px 8px rgba(0,0,0,0.04);
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            transition: box-shadow 0.2s, transform 0.2s;
+            position: relative;
+            z-index: 2;
+        }
+        .card:hover {
+            box-shadow: 0 14px 38px rgba(2, 132, 199, 0.22);
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1.5px solid var(--border-subtle);
+            padding-bottom: 10px;
+        }
+        
+        .card-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--ocean-deep);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .compact-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 10px;
+        }
+        
+        .stat-block {
+            background: rgba(255, 255, 255, 0.72);
+            border: 1px solid var(--border-subtle);
+            padding: 8px 10px;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            min-width: 0;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.03);
+        }
+        [data-theme="dark"] .stat-block {
+            background: rgba(14, 30, 54, 0.78);
+            border-color: rgba(56, 189, 248, 0.22);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.35);
+        }
+        
+        .stat-block .stat-label {
+            font-size: 10px;
+            color: var(--ocean-deep);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        [data-theme="dark"] .stat-block .stat-label {
+            color: #38bdf8;
+            letter-spacing: 0.6px;
+        }
+        
+        .stat-block .stat-val {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-primary);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        [data-theme="dark"] .stat-block .stat-val {
+            color: #f8fafc;
+        }
+
+        /* 24-Hour Multi-Relay Timeline Component */
+        .timeline-card {
+            background: rgba(255, 255, 255, 0.6);
+            border: 1.5px solid var(--border-subtle);
+            border-radius: 12px;
+            padding: 12px 14px;
+            margin-top: 6px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.02);
+            position: relative;
+        }
+        [data-theme="dark"] .timeline-card {
+            background: rgba(10, 24, 43, 0.65);
+            border-color: rgba(56, 189, 248, 0.18);
+            box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.3);
+        }
+        .timeline-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .timeline-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--ocean-deep);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .timeline-legend {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 11px;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .legend-swatch {
+            width: 14px;
+            height: 10px;
+            border-radius: 3px;
+            display: inline-block;
+        }
+        .swatch-cont {
+            background: var(--text-muted);
+        }
+        .swatch-pulse {
+            background: repeating-linear-gradient(-45deg, var(--text-muted), var(--text-muted) 3px, transparent 3px, transparent 6px);
+            border: 1px solid var(--text-muted);
+        }
+        .swatch-off {
+            background: rgba(148, 163, 184, 0.25);
+            border: 1px solid rgba(148, 163, 184, 0.35);
+        }
+        [data-theme="dark"] .swatch-off {
+            background: rgba(15, 26, 44, 0.65);
+            border: 1px dashed rgba(56, 189, 248, 0.25);
+        }
+        
+        .timeline-scroll-wrapper {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            padding-bottom: 4px;
+            margin: 0 -4px;
+        }
+        .timeline-scroll-wrapper::-webkit-scrollbar {
+            height: 6px;
+        }
+        .timeline-scroll-wrapper::-webkit-scrollbar-thumb {
+            background: rgba(2, 132, 199, 0.25);
+            border-radius: 4px;
+        }
+        .timeline-scroll-content {
+            min-width: 820px;
+            position: relative;
+        }
+        .timeline-ruler {
+            display: flex;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+        .timeline-ruler-spacer {
+            width: 140px;
+            flex-shrink: 0;
+            position: sticky;
+            left: 0;
+            z-index: 10;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(8px);
+        }
+        [data-theme="dark"] .timeline-ruler-spacer {
+            background: rgba(13, 27, 49, 0.96);
+        }
+        .timeline-ruler-ticks {
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(24, 1fr);
+            gap: 3px;
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', Consolas, monospace;
+            text-align: center;
+            padding: 0 3px;
+        }
+        .timeline-track-row {
+            display: flex;
+            align-items: center;
+            position: relative;
+            margin-bottom: 6px;
+            border-radius: 8px;
+            transition: all 0.15s;
+        }
+        .timeline-track-row.selected {
+            background: rgba(2, 132, 199, 0.08);
+            box-shadow: 0 0 0 1.5px var(--ocean-blue);
+        }
+        [data-theme="dark"] .timeline-track-row.selected {
+            background: rgba(56, 189, 248, 0.12);
+            box-shadow: 0 0 0 1.5px #38bdf8;
+        }
+        .timeline-relay-label {
+            width: 140px;
+            flex-shrink: 0;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-primary);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            position: sticky;
+            left: 0;
+            z-index: 10;
+            background: rgba(255, 255, 255, 0.96);
+            backdrop-filter: blur(8px);
+            padding: 6px 10px;
+            border-radius: 6px 0 0 6px;
+            border: 1px solid var(--border-subtle);
+            border-right: none;
+            box-shadow: 2px 0 4px rgba(0,0,0,0.03);
+            cursor: pointer;
+            user-select: none;
+        }
+        .timeline-relay-label:hover {
+            color: var(--ocean-blue);
+        }
+        [data-theme="dark"] .timeline-relay-label {
+            background: rgba(13, 27, 49, 0.96);
+            border-color: rgba(56, 189, 248, 0.22);
+            color: #f1f5f9;
+            box-shadow: 3px 0 8px rgba(0, 0, 0, 0.35);
+        }
+        [data-theme="dark"] .timeline-relay-label:hover {
+            color: #38bdf8;
+            background: rgba(18, 38, 70, 0.98);
+        }
+        .timeline-bar-grid {
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(24, 1fr);
+            gap: 3px;
+            height: 28px;
+            background: rgba(0, 0, 0, 0.04);
+            padding: 3px;
+            border-radius: 0 6px 6px 0;
+            border: 1px solid var(--border-subtle);
+        }
+        [data-theme="dark"] .timeline-bar-grid {
+            background: rgba(4, 10, 18, 0.7);
+            border-color: rgba(56, 189, 248, 0.16);
+        }
+        .timeline-hour-slot {
+            border-radius: 4px;
+            height: 100%;
+            cursor: pointer;
+            transition: transform 0.15s, opacity 0.15s;
+            position: relative;
+            user-select: none;
+        }
+        .timeline-hour-slot:hover {
+            transform: scaleY(1.18);
+            z-index: 5;
+        }
+        
+        .slot-off {
+            background: rgba(255, 255, 255, 0.55);
+            border: 1px dashed rgba(148, 163, 184, 0.4);
+        }
+        [data-theme="dark"] .slot-off {
+            background: rgba(15, 26, 44, 0.65);
+            border: 1px dashed rgba(56, 189, 248, 0.18);
+        }
+        [data-theme="dark"] .slot-off:hover {
+            background: rgba(30, 58, 95, 0.8);
+            border-color: rgba(56, 189, 248, 0.5);
+        }
+        .slot-cont-1 {
+            background: linear-gradient(180deg, #fbbf24, #d97706);
+        }
+        .slot-cont-2 {
+            background: linear-gradient(180deg, #34d399, #059669);
+        }
+        .slot-cont-3 {
+            background: linear-gradient(180deg, #38bdf8, #0284c7);
+        }
+        .slot-cont-4 {
+            background: linear-gradient(180deg, #c084fc, #7c3aed);
+        }
+        
+        .slot-pulse-1 {
+            background: repeating-linear-gradient(-45deg, #d97706, #d97706 3px, #fef3c7 3px, #fef3c7 6px);
+            border: 1px solid #d97706;
+        }
+        .slot-pulse-2 {
+            background: repeating-linear-gradient(-45deg, #059669, #059669 3px, #d1fae5 3px, #d1fae5 6px);
+            border: 1px solid #059669;
+        }
+        .slot-pulse-3 {
+            background: repeating-linear-gradient(-45deg, #0284c7, #0284c7 3px, #e0f2fe 3px, #e0f2fe 6px);
+            border: 1px solid #0284c7;
+        }
+        .slot-pulse-4 {
+            background: repeating-linear-gradient(-45deg, #7c3aed, #7c3aed 3px, #f3e8ff 3px, #f3e8ff 6px);
+            border: 1px solid #7c3aed;
+        }
+        
+        .timeline-now-line {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #ef4444;
+            box-shadow: 0 0 6px #ef4444;
+            pointer-events: none;
+            z-index: 8;
+            transition: left 0.5s ease;
+        }
+        .timeline-now-pin {
+            position: absolute;
+            top: -18px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #ef4444;
+            color: white;
+            font-size: 9px;
+            font-weight: 800;
+            padding: 1px 5px;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            white-space: nowrap;
+        }
+
+        /* Feed Mode Banner */
+        .feed-banner {
+            display: none;
+            background: linear-gradient(135deg, rgba(254, 243, 199, 0.95), rgba(253, 230, 138, 0.9));
+            border: 1.5px solid #f59e0b;
+            border-radius: 14px;
+            padding: 12px 16px;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            box-shadow: 0 4px 14px rgba(245, 158, 11, 0.25);
+            animation: pulse-orange 2.5s infinite;
+        }
+        .feed-banner.show {
+            display: flex;
+        }
+        .feed-text {
+            font-size: 13px;
+            font-weight: 700;
+            color: #92400e;
+        }
+        
+        /* Relays List */
+        .relay-item {
+            background: rgba(255, 255, 255, 0.78);
+            border-radius: 12px;
+            padding: 12px 14px;
+            border: 1.5px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            box-shadow: 0 2px 8px rgba(2, 132, 199, 0.06);
+        }
+        
+        .relay-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .relay-name {
+            font-weight: 700;
+            font-size: 15px;
+            color: var(--text-primary);
+        }
+        
+        .relay-gpio-tag {
+            font-family: 'JetBrains Mono', Consolas, monospace;
+            font-size: 11px;
+            color: var(--ocean-deep);
+            background: rgba(2, 132, 199, 0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+        
+        .relay-status-banner {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            background: rgba(255, 255, 255, 0.85);
+            border: 1px solid var(--border-subtle);
+            line-height: 1.4;
+            letter-spacing: 0.2px;
+        }
+        .relay-status-banner.status-active {
+            background: #ecfdf5;
+            border-color: #a7f3d0;
+            color: #065f46;
+        }
+        .relay-status-banner.status-paused {
+            background: #fffbeb;
+            border-color: #fde68a;
+            color: #92400e;
+            animation: pulse-orange 3s infinite;
+        }
+        .relay-status-banner.status-idle {
+            background: #f8fafc;
+            border-color: #e2e8f0;
+            color: #475569;
+        }
+        .relay-status-banner.status-warn {
+            background: #fef2f2;
+            border-color: #fecaca;
+            color: #991b1b;
+        }
+        
+        .relay-action-badges {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-badge {
+            font-family: inherit;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 5px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            border: 1px solid transparent;
+            user-select: none;
+            line-height: 1;
+        }
+
+        .btn-badge:hover {
+            transform: translateY(-1px);
+        }
+
+        .btn-badge:active {
+            transform: translateY(1px);
+        }
+
+        /* AUTO badge button */
+        .btn-badge-auto.active {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: #ffffff;
+            box-shadow: 0 2px 6px rgba(16, 185, 129, 0.35);
+        }
+
+        .btn-badge-auto.inactive {
+            background: rgba(0, 0, 0, 0.06);
+            color: #64748b;
+            border-color: rgba(0, 0, 0, 0.1);
+            opacity: 0.8;
+        }
+
+        .btn-badge-auto.inactive:hover {
+            opacity: 1;
+            background: rgba(0, 0, 0, 0.1);
+            color: var(--text-primary);
+        }
+
+        /* POWER badge button */
+        .btn-badge-power.neutral {
+            background: rgba(0, 0, 0, 0.06);
+            color: #64748b;
+            border-color: rgba(0, 0, 0, 0.1);
+            opacity: 0.8;
+        }
+
+        .btn-badge-power.neutral:hover {
+            opacity: 1;
+            background: rgba(0, 0, 0, 0.1);
+            color: var(--text-primary);
+        }
+
+        .btn-badge-power.forced-on {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: #ffffff;
+            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);
+        }
+
+        .btn-badge-power.forced-off {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: #ffffff;
+            box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #0ea5e9, #0284c7);
+            color: white;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-family: inherit;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 13px;
+            box-shadow: 0 2px 6px rgba(2, 132, 199, 0.25);
+        }
+        
+        .btn:hover {
+            opacity: 0.95;
+            box-shadow: 0 4px 12px rgba(2, 132, 199, 0.35);
+            transform: translateY(-1px);
+        }
+        
+        .btn:active {
+            transform: translateY(1px);
+        }
+        
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.8);
+            color: var(--text-primary);
+            border: 1px solid var(--border-subtle);
+            box-shadow: none;
+        }
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+        }
+        [data-theme="dark"] .btn-secondary {
+            background: rgba(14, 30, 54, 0.85);
+            color: #f8fafc;
+            border-color: rgba(56, 189, 248, 0.25);
+        }
+        [data-theme="dark"] .btn-secondary:hover {
+            background: rgba(22, 49, 88, 0.95);
+            border-color: #38bdf8;
+            color: #ffffff;
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+        }
+        
+        .btn-warning {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+        }
+        
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 12px;
+            border-radius: 6px;
+        }
+        
+        .badge {
+            font-size: 11px;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        
+        .badge-auto { background: rgba(2, 132, 199, 0.12); color: var(--ocean-deep); border: 1px solid rgba(2, 132, 199, 0.25); }
+        
+        /* Theme Switcher Button in Header */
+        .theme-btn {
+            background: rgba(255, 255, 255, 0.28);
+            border: 1.5px solid var(--border-color);
+            border-radius: 9999px;
+            padding: 5px 11px;
+            font-size: 15px;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            transition: all 0.2s;
+            color: var(--text-primary);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+        }
+        .theme-btn:hover {
+            transform: scale(1.08);
+            border-color: var(--ocean-blue);
+        }
+        [data-theme="dark"] .theme-btn {
+            background: rgba(15, 23, 42, 0.65);
+            border-color: rgba(56, 189, 248, 0.35);
+        }
+
+        /* Real-Time Physical Relay State Dot on Timeline Track (1.2s Cycle: 60% Base / 15% Blip 1 / 10% Gap / 15% Blip 2) */
+        .timeline-relay-dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            display: inline-block;
+            flex-shrink: 0;
+            margin-right: 7px;
+            transition: all 0.2s;
+            box-sizing: border-box;
+        }
+        .timeline-relay-dot.dot-idle {
+            background-color: #94a3b8;
+            border: 1px solid rgba(148, 163, 184, 0.4);
+            box-shadow: none;
+        }
+        .timeline-relay-dot.dot-active {
+            background-color: #10b981;
+            border: 1.5px solid #10b981;
+            box-shadow: 0 0 8px rgba(16, 185, 129, 0.85);
+        }
+
+        /* Intermittent Running: Base Green (60%), then 2 White Blips */
+        @keyframes pulse-running-blips {
+            0%, 60% {
+                background-color: #10b981;
+                border: 1.5px solid #10b981;
+                box-shadow: 0 0 8px rgba(16, 185, 129, 0.85);
+            }
+            60.1%, 75% {
+                background-color: #ffffff;
+                border: 1.5px solid #10b981;
+                box-shadow: 0 0 7px rgba(255, 255, 255, 0.95), 0 0 10px rgba(16, 185, 129, 0.7);
+            }
+            75.1%, 85% {
+                background-color: #10b981;
+                border: 1.5px solid #10b981;
+                box-shadow: 0 0 8px rgba(16, 185, 129, 0.85);
+            }
+            85.1%, 100% {
+                background-color: #ffffff;
+                border: 1.5px solid #10b981;
+                box-shadow: 0 0 7px rgba(255, 255, 255, 0.95), 0 0 10px rgba(16, 185, 129, 0.7);
+            }
+        }
+        .timeline-relay-dot.dot-pulse-running {
+            animation: pulse-running-blips 1.2s infinite ease-in-out;
+        }
+
+        /* Intermittent Pause: Base White (60%), then 2 Green Blips */
+        @keyframes pulse-paused-blips {
+            0%, 60% {
+                background-color: #ffffff;
+                border: 1.5px solid #10b981;
+                box-shadow: 0 0 6px rgba(16, 185, 129, 0.45);
+            }
+            60.1%, 75% {
+                background-color: #10b981;
+                border: 1.5px solid #10b981;
+                box-shadow: 0 0 9px rgba(16, 185, 129, 0.95);
+            }
+            75.1%, 85% {
+                background-color: #ffffff;
+                border: 1.5px solid #10b981;
+                box-shadow: 0 0 6px rgba(16, 185, 129, 0.45);
+            }
+            85.1%, 100% {
+                background-color: #10b981;
+                border: 1.5px solid #10b981;
+                box-shadow: 0 0 9px rgba(16, 185, 129, 0.95);
+            }
+        }
+        .timeline-relay-dot.dot-pulse-paused {
+            animation: pulse-paused-blips 1.2s infinite ease-in-out;
+        }
+        
+        /* Empty / Inactive Timeline Track */
+        .timeline-track-row.track-empty {
+            opacity: 0.68;
+        }
+        .timeline-track-row.track-empty .timeline-bar-grid {
+            background: rgba(148, 163, 184, 0.12);
+        }
+        .timeline-track-row.track-empty .slot-off {
+            background: rgba(148, 163, 184, 0.18);
+            border-color: rgba(148, 163, 184, 0.28);
+        }
+        .timeline-empty-notice {
+            position: absolute;
+            left: 0; right: 0; top: 0; bottom: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: 700;
+            color: rgba(71, 85, 105, 0.85);
+            pointer-events: none;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+        [data-theme="dark"] .timeline-empty-notice {
+            color: rgba(148, 163, 184, 0.75);
+        }
+
+        /* Presets Toolbar (Mobile & Desktop Icon Layout) */
+        .preset-toolbar {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            flex-wrap: nowrap;
+        }
+        .btn-icon {
+            width: 36px;
+            height: 36px;
+            padding: 0;
+            font-size: 15px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            flex-shrink: 0;
+            background: var(--btn-bg);
+            border: 1px solid var(--border-subtle);
+            cursor: pointer;
+            transition: all 0.15s;
+            color: var(--text-primary);
+        }
+        .btn-icon:hover {
+            transform: translateY(-1px);
+            border-color: var(--ocean-blue);
+            background: #ffffff;
+        }
+        [data-theme="dark"] .btn-icon:hover {
+            background: rgba(30, 41, 59, 0.9);
+            border-color: var(--accent-primary);
+        }
+        .btn-icon-danger:hover {
+            border-color: var(--state-danger) !important;
+            background: #fee2e2 !important;
+            color: #dc2626 !important;
+        }
+        [data-theme="dark"] .btn-icon-danger:hover {
+            background: rgba(153, 27, 27, 0.4) !important;
+            color: #fca5a5 !important;
+        }
+        .btn-icon-dirty {
+            border-color: var(--state-warn) !important;
+            background: #fef3c7 !important;
+            box-shadow: 0 0 10px rgba(245, 158, 11, 0.6) !important;
+            animation: pulse-orange 2s infinite;
+        }
+        [data-theme="dark"] .btn-icon-dirty {
+            background: rgba(120, 53, 15, 0.6) !important;
+        }
+
+        /* Compact Pulse Timings Inline Inputs (mm:ss) */
+        .pulse-compact-box {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .pulse-input-group {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .pulse-time-input {
+            font-family: 'JetBrains Mono', Consolas, monospace !important;
+            font-size: 13px !important;
+            font-weight: 700 !important;
+            text-align: center;
+            padding: 6px 8px !important;
+            border-radius: 8px !important;
+            border: 1.5px solid var(--border-subtle) !important;
+            background: var(--input-bg) !important;
+            color: var(--text-primary) !important;
+            width: 74px !important;
+        }
+
+        /* Chapter 2 Compact Segmented Control */
+        .segmented-control {
+            display: inline-flex;
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 8px;
+            padding: 3px;
+            gap: 4px;
+        }
+        [data-theme="dark"] .segmented-control {
+            background: rgba(0, 0, 0, 0.35);
+        }
+
+        /* Outage Event History Alert Colors */
+        .event-pwr-alert {
+            color: var(--state-danger) !important;
+            font-weight: 700 !important;
+        }
+        .event-wifi-alert {
+            color: var(--state-warn) !important;
+            font-weight: 600 !important;
+        }
+        .event-restored {
+            color: var(--state-ok) !important;
+            font-weight: 700 !important;
+        }
+
+        /* Footer */
+        .aquarium-footer {
+            margin-top: 24px;
+            text-align: center;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.92);
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+            padding: 12px 10px 24px;
+            font-weight: 500;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            z-index: 2;
+        }
+        [data-theme="dark"] .aquarium-footer {
+            color: #94a3b8;
+            text-shadow: none;
+        }
+
+
+        
+        /* Form controls */
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        label {
+            font-size: 11px;
+            color: var(--ocean-deep);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        input[type="number"], input[type="text"], input[type="password"], select {
+            background-color: rgba(255, 255, 255, 0.85);
+            border: 1.5px solid var(--border-subtle);
+            padding: 9px 12px;
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 600;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            width: 100%;
+        }
+        select option {
+            background-color: #ffffff;
+            color: var(--text-primary);
+        }
+        [data-theme="dark"] input[type="number"], 
+        [data-theme="dark"] input[type="text"], 
+        [data-theme="dark"] input[type="password"], 
+        [data-theme="dark"] select {
+            background-color: rgba(13, 27, 49, 0.85);
+            border-color: rgba(56, 189, 248, 0.25);
+            color: #f8fafc;
+        }
+        [data-theme="dark"] select option {
+            background-color: #0d1b31;
+            color: #f8fafc;
+        }
+        
+        input:focus, select:focus {
+            border-color: var(--ocean-blue);
+            box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
+        }
+        
+        .pulse-input-pair {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .pulse-input-pair input {
+            width: 60px;
+            text-align: center;
+        }
+        .pulse-input-pair span {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        /* Timeline Container & Items (Event History) */
+        .timeline-container {
+            max-height: 250px;
+            overflow-y: auto;
+            overflow-x: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            padding-right: 4px;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .timeline-container::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .timeline-container::-webkit-scrollbar-thumb {
+            background: rgba(2, 132, 199, 0.25);
+            border-radius: 4px;
+        }
+        
+        .timeline-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            padding: 8px 10px;
+            background: rgba(255, 255, 255, 0.65);
+            border-left: 3px solid var(--ocean-blue);
+            border-radius: 6px;
+            font-size: 12px;
+            line-height: 1.4;
+            min-width: 0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+        }
+        [data-theme="dark"] .timeline-item {
+            background: rgba(14, 30, 54, 0.75);
+            border-left-color: #38bdf8;
+            border-top: 1px solid rgba(56, 189, 248, 0.1);
+            border-right: 1px solid rgba(56, 189, 248, 0.1);
+            border-bottom: 1px solid rgba(56, 189, 248, 0.1);
+        }
+        
+        .timeline-time {
+            font-family: 'JetBrains Mono', Consolas, monospace;
+            font-size: 11px;
+            color: var(--ocean-deep);
+            background: rgba(2, 132, 199, 0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+            flex-shrink: 0;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+        [data-theme="dark"] .timeline-time {
+            color: #38bdf8;
+            background: rgba(56, 189, 248, 0.15);
+        }
+        
+        .timeline-msg {
+            color: var(--text-primary);
+            word-break: break-word;
+            flex-grow: 1;
+            min-width: 0;
+            font-weight: 500;
+        }
+        
+        /* Modals */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(7, 89, 133, 0.45);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            padding: 16px;
+        }
+        .modal.show {
+            display: flex;
+        }
+        .modal-content {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 16px;
+            border: 1.5px solid var(--border-color);
+            padding: 22px;
+            max-width: 440px;
+            width: 100%;
+            box-shadow: 0 15px 35px rgba(2, 132, 199, 0.25);
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        [data-theme="dark"] .modal-content {
+            background: rgba(11, 23, 40, 0.97);
+            border-color: rgba(56, 189, 248, 0.28);
+            box-shadow: 0 18px 45px rgba(0, 0, 0, 0.6), 0 0 25px rgba(56, 189, 248, 0.12);
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1.5px solid var(--border-subtle);
+            padding-bottom: 8px;
+        }
+        .modal-header h2 {
+            font-size: 17px;
+            font-weight: 700;
+            color: var(--ocean-deep);
+        }
+        .close-btn {
+            font-size: 24px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            line-height: 1;
+            background: none;
+            border: none;
+            padding: 2px 6px;
+            border-radius: 6px;
+            font-family: inherit;
+        }
+        .close-btn:hover {
+            color: var(--state-danger);
+        }
+        
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background-color: rgba(15, 23, 42, 0.92);
+            color: #ffffff;
+            border: 1px solid #38bdf8;
+            padding: 10px 20px;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            transition: transform 0.3s ease;
+            z-index: 3000;
+            font-weight: 600;
+            font-size: 13px;
+        }
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+        
+        footer {
+            text-align: center;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.9);
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+            padding: 12px 0 20px;
+            font-weight: 600;
+        }
+
+        /* ---- v3.5.0 UI/UX fixes ---- */
+
+        /* Visible keyboard focus everywhere */
+        :focus-visible {
+            outline: 2px solid var(--accent-primary);
+            outline-offset: 2px;
+        }
+        .timeline-hour-slot:focus-visible {
+            outline-offset: 1px;
+            z-index: 6;
+        }
+
+        /* Dark theme: relay cards and status banners (were hard-coded light colours) */
+        [data-theme="dark"] .relay-item {
+            background: rgba(14, 30, 54, 0.78);
+            border-color: rgba(56, 189, 248, 0.22);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.35);
+        }
+        [data-theme="dark"] .relay-gpio-tag {
+            color: #7dd3fc;
+            background: rgba(56, 189, 248, 0.15);
+        }
+        [data-theme="dark"] .relay-status-banner.status-active {
+            background: rgba(6, 78, 59, 0.45);
+            border-color: rgba(16, 185, 129, 0.45);
+            color: #6ee7b7;
+        }
+        [data-theme="dark"] .relay-status-banner.status-paused {
+            background: rgba(120, 53, 15, 0.45);
+            border-color: rgba(251, 191, 36, 0.45);
+            color: #fcd34d;
+        }
+        [data-theme="dark"] .relay-status-banner.status-idle {
+            background: rgba(15, 23, 42, 0.6);
+            border-color: rgba(100, 116, 139, 0.4);
+            color: #cbd5e1;
+        }
+        [data-theme="dark"] .relay-status-banner.status-warn {
+            background: rgba(127, 29, 29, 0.45);
+            border-color: rgba(248, 113, 113, 0.45);
+            color: #fca5a5;
+        }
+        [data-theme="dark"] .btn-badge-auto.inactive,
+        [data-theme="dark"] .btn-badge-power.neutral {
+            background: rgba(148, 163, 184, 0.12);
+            color: #cbd5e1;
+            border-color: rgba(148, 163, 184, 0.3);
+        }
+
+        .relay-gpio-tag {
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        .relay-name {
+            min-width: 0;
+            overflow-wrap: anywhere;
+        }
+
+        /* Manual override: its own colour (violet), independent of forced ON/OFF */
+        .relay-status-banner.status-manual {
+            background: #f5f3ff;
+            border-color: #ddd6fe;
+            color: #5b21b6;
+        }
+        [data-theme="dark"] .relay-status-banner.status-manual {
+            background: rgba(76, 29, 149, 0.4);
+            border-color: rgba(167, 139, 250, 0.5);
+            color: #c4b5fd;
+        }
+
+        /* Unsaved schedule draft bar */
+        .draft-bar {
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            flex-wrap: wrap;
+            padding: 10px 12px;
+            border-radius: 10px;
+            background: #fffbeb;
+            border: 1.5px solid #f59e0b;
+            color: #92400e;
+            font-size: 12px;
+            font-weight: 700;
+        }
+        .draft-bar.show {
+            display: flex;
+        }
+        .draft-bar-actions {
+            display: flex;
+            gap: 8px;
+        }
+        [data-theme="dark"] .draft-bar {
+            background: rgba(120, 53, 15, 0.45);
+            border-color: rgba(251, 191, 36, 0.6);
+            color: #fcd34d;
+        }
+
+        /* Overview grid: fit all 7 tiles on one row on desktop */
+        .compact-grid.overview-grid {
+            grid-template-columns: repeat(auto-fit, minmax(105px, 1fr));
+        }
+
+        .card-header {
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 12px 8px 80px;
+            }
+            .card {
+                padding: 14px;
+            }
+            .overview-grid .stat-block:last-child {
+                grid-column: 1 / -1;
+            }
+            .timeline-legend {
+                gap: 8px;
+                flex-wrap: wrap;
+            }
+            .card-title {
+                font-size: 15px;
+            }
+        }
+
+        /* Touch screens: bigger hour slots (min. ~36px) so taps while scrolling don't mis-toggle */
+        @media (pointer: coarse) {
+            .timeline-scroll-content {
+                min-width: 1040px;
+            }
+            .timeline-bar-grid {
+                height: 38px;
+            }
+            .timeline-relay-label {
+                width: 118px;
+                padding: 10px 8px;
+            }
+            .timeline-ruler-spacer {
+                width: 118px;
+            }
+            .timeline-hour-slot:hover {
+                transform: none;
+            }
+            .btn-badge {
+                padding: 9px 12px;
+            }
+        }
+
+        /* Respect OS "reduce motion": stop decorative fish, bubbles, plants and pulsing */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.001ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.001ms !important;
+            }
+            .bubbles-layer, .critter {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Natural Volcanic Aquasoil Substrate Bed (from user's real tank photo) -->
+    <div class="aquasoil-bed" aria-hidden="true"></div>
+
+    <!-- Floating Surface Plant Roots (Salvinia / Frogbit) -->
+    <div class="floating-roots-layer" aria-hidden="true">
+        <svg class="roots-svg" viewBox="0 0 1200 48" preserveAspectRatio="none">
+            <path d="M0,0 Q30,42 60,0 Q90,48 120,0 Q160,36 200,0 Q240,50 280,0 Q320,32 360,0 Q400,46 440,0 Q480,35 520,0 Q560,50 600,0 Q640,38 680,0 Q720,48 760,0 Q800,32 840,0 Q880,50 920,0 Q960,36 1000,0 Q1040,52 1080,0 Q1120,34 1160,0 Q1180,44 1200,0" fill="none" stroke="rgba(132, 204, 22, 0.45)" stroke-width="2.2" stroke-linecap="round"/>
+            <path d="M15,0 Q45,30 75,0 Q110,42 145,0 Q180,28 215,0 Q260,46 305,0 Q345,26 385,0 Q425,40 465,0 Q505,30 545,0 Q585,44 625,0 Q665,32 705,0 Q745,42 785,0 Q825,28 865,0 Q905,42 945,0 Q985,30 1025,0 Q1065,46 1105,0 Q1145,30 1185,0" fill="none" stroke="rgba(163, 230, 53, 0.35)" stroke-width="1.6"/>
+        </svg>
+    </div>
+
+    <!-- Swaying Lush Plant Stems (Staurogyne / Ludwigia / Vallisneria) -->
+    <div class="plants-layer" aria-hidden="true">
+        <svg class="plant plant-left" viewBox="0 0 160 320" fill="none">
+            <path d="M20,320 Q35,210 15,120 Q5,40 25,0" stroke="#15803d" stroke-width="4" stroke-linecap="round"/>
+            <path d="M15,220 Q55,200 45,175 Q20,195 18,215" fill="#22c55e" opacity="0.85"/>
+            <path d="M16,160 Q-25,145 -15,120 Q12,140 15,155" fill="#16a34a" opacity="0.85"/>
+            <path d="M18,100 Q60,85 50,60 Q18,80 16,95" fill="#4ade80" opacity="0.85"/>
+            <path d="M16,50 Q-20,35 -10,15 Q14,35 18,48" fill="#22c55e" opacity="0.85"/>
+            <path d="M25,0 Q32,-20 25,-25 Q18,-15 25,0" fill="#86efac" opacity="0.9"/>
+        </svg>
+        <svg class="plant plant-right" viewBox="0 0 160 320" fill="none">
+            <path d="M140,320 Q125,210 145,120 Q155,40 135,0" stroke="#15803d" stroke-width="4" stroke-linecap="round"/>
+            <path d="M145,220 Q105,200 115,175 Q140,195 142,215" fill="#22c55e" opacity="0.85"/>
+            <path d="M144,160 Q185,145 175,120 Q148,140 145,155" fill="#16a34a" opacity="0.85"/>
+            <path d="M142,100 Q100,85 110,60 Q142,80 144,95" fill="#4ade80" opacity="0.85"/>
+            <path d="M144,50 Q180,35 170,15 Q146,35 142,48" fill="#22c55e" opacity="0.85"/>
+        </svg>
+    </div>
+
+
+    <!-- Real Tank Critters (Always swimming head-first: scaleX(1)=Right, scaleX(-1)=Left) -->
+    <!-- 1. Mickey Mouse Platy (Bright orange with 3 spots on tail) -->
+    <div class="critter critter-mickey" title="Mickey Mouse Platy" aria-hidden="true">
+        <svg width="50" height="28" viewBox="0 0 52 30" fill="none">
+            <path d="M42,15 Q30,5 15,10 Q2,15 15,22 Q30,25 42,15 Z" fill="#f97316"/>
+            <circle cx="36" cy="15" r="4.2" fill="#0f172a"/>
+            <circle cx="33" cy="11" r="2.4" fill="#0f172a"/>
+            <circle cx="33" cy="19" r="2.4" fill="#0f172a"/>
+            <path d="M40,15 L50,6 L48,15 L50,24 Z" fill="rgba(251, 146, 60, 0.75)"/>
+            <path d="M22,9 Q25,2 30,7 Z" fill="rgba(251, 146, 60, 0.7)"/>
+            <circle cx="8" cy="13" r="2" fill="#ffffff"/>
+            <circle cx="7.5" cy="13" r="1.2" fill="#0f172a"/>
+        </svg>
+    </div>
+
+    <!-- 2. Male Guppy with Wavy Fan Tail -->
+    <div class="critter critter-guppy" title="Male Guppy" aria-hidden="true">
+        <svg width="52" height="28" viewBox="0 0 54 28" fill="none">
+            <path class="guppy-tail" d="M36,14 Q48,2 52,6 Q48,14 53,22 Q46,26 36,14 Z" fill="url(#guppy-tail-grad)"/>
+            <ellipse cx="22" cy="14" rx="14" ry="5.5" fill="#38bdf8"/>
+            <path d="M18,9 Q25,1 32,7 Z" fill="rgba(236, 72, 153, 0.8)"/>
+            <circle cx="11" cy="13" r="1.8" fill="#ffffff"/>
+            <circle cx="10.5" cy="13" r="1" fill="#0f172a"/>
+            <defs>
+                <linearGradient id="guppy-tail-grad" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stop-color="#ec4899"/>
+                    <stop offset="50%" stop-color="#8b5cf6"/>
+                    <stop offset="100%" stop-color="#38bdf8"/>
+                </linearGradient>
+            </defs>
+        </svg>
+    </div>
+
+    <!-- 3. Guppy Fry School (Puiet de Guppy) -->
+    <div class="critter critter-fry" title="Guppy Fry School" aria-hidden="true">
+        <svg width="42" height="26" viewBox="0 0 44 28" fill="none">
+            <ellipse cx="10" cy="8" rx="6" ry="2.2" fill="rgba(255,255,255,0.75)"/>
+            <circle cx="6" cy="8" r="0.9" fill="#0f172a"/>
+            <ellipse cx="24" cy="12" rx="5" ry="2" fill="rgba(255,255,255,0.7)"/>
+            <circle cx="20.5" cy="12" r="0.8" fill="#0f172a"/>
+            <ellipse cx="14" cy="18" rx="5.5" ry="2.2" fill="rgba(255,255,255,0.75)"/>
+            <circle cx="10" cy="18" r="0.9" fill="#0f172a"/>
+            <ellipse cx="32" cy="19" rx="5" ry="1.9" fill="rgba(255,255,255,0.65)"/>
+            <circle cx="28.5" cy="19" r="0.8" fill="#0f172a"/>
+        </svg>
+    </div>
+
+    <!-- 4. SAE 1 (Siamese Algae Eater with continuous black lateral stripe) -->
+    <div class="critter critter-sae-1" title="Siamese Algae Eater (SAE)" aria-hidden="true">
+        <svg width="58" height="19" viewBox="0 0 60 20" fill="none">
+            <path d="M48,10 Q35,4 12,6 Q2,10 12,14 Q35,16 48,10 Z" fill="#cbd5e1"/>
+            <path d="M2,10 L56,10" stroke="#0f172a" stroke-width="2.6" stroke-linecap="round"/>
+            <path d="M48,10 L58,4 L55,10 L58,16 Z" fill="rgba(203, 213, 225, 0.6)"/>
+            <circle cx="8" cy="9" r="1.6" fill="#fbbf24"/>
+            <circle cx="7.5" cy="9" r="1" fill="#0f172a"/>
+        </svg>
+    </div>
+
+    <!-- 5. SAE 2 (Lower water column) -->
+    <div class="critter critter-sae-2" title="Siamese Algae Eater (SAE)" aria-hidden="true">
+        <svg width="54" height="18" viewBox="0 0 56 18" fill="none">
+            <path d="M44,9 Q32,4 10,6 Q2,9 10,12 Q32,14 44,9 Z" fill="#cbd5e1"/>
+            <path d="M2,9 L52,9" stroke="#0f172a" stroke-width="2.4" stroke-linecap="round"/>
+            <path d="M44,9 L54,3 L51,9 L54,15 Z" fill="rgba(203, 213, 225, 0.6)"/>
+            <circle cx="7" cy="8" r="1.5" fill="#fbbf24"/>
+            <circle cx="6.5" cy="8" r="0.9" fill="#0f172a"/>
+        </svg>
+    </div>
+
+    <!-- 6. Red Cherry Shrimp (near bottom) -->
+    <div class="critter critter-shrimp" title="Red Cherry Shrimp" aria-hidden="true">
+        <svg width="34" height="22" viewBox="0 0 34 22" fill="none">
+            <path d="M8,10 Q14,4 22,8 Q26,12 28,16" stroke="#ef4444" stroke-width="2.8" stroke-linecap="round" fill="none"/>
+            <circle cx="7" cy="11" r="3" fill="#dc2626"/>
+            <circle cx="5" cy="10" r="0.9" fill="#ffffff"/>
+            <path d="M5,10 Q-3,4 -8,2" stroke="rgba(255,255,255,0.7)" stroke-width="0.8" fill="none"/>
+            <path d="M5,12 Q-2,14 -6,16" stroke="rgba(255,255,255,0.7)" stroke-width="0.8" fill="none"/>
+            <path d="M12,12 L10,17 M16,13 L15,18 M20,14 L19,19" stroke="#ef4444" stroke-width="1.2" stroke-linecap="round"/>
+        </svg>
+    </div>
+
+    <!-- 7. Zebra Snail (Neritina on rock/substrate) -->
+    <div class="critter critter-snail" title="Zebra Snail (Neritina)" aria-hidden="true">
+        <svg width="28" height="20" viewBox="0 0 28 20" fill="none">
+            <ellipse cx="14" cy="11" rx="12" ry="8" fill="#eab308"/>
+            <path d="M6,6 Q13,11 7,16" stroke="#0f172a" stroke-width="2" fill="none"/>
+            <path d="M12,4 Q18,11 13,18" stroke="#0f172a" stroke-width="2" fill="none"/>
+            <path d="M18,5 Q24,11 20,17" stroke="#0f172a" stroke-width="2" fill="none"/>
+            <ellipse cx="13" cy="17" rx="9" ry="2" fill="#fef08a" opacity="0.8"/>
+        </svg>
+    </div>
+
+    <div class="container">
+        <!-- Header with Theme Toggle -->
+        <header>
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <span style="font-size: 28px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15));">🐠</span>
+                <div>
+                    <h1>Aquatlantis</h1>
+                    <p style="font-size: 12px; color: var(--text-secondary); font-weight: 600;">Smart Controller • BioBox 56L</p>
+                </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <button id="theme-toggle-btn" class="theme-btn" onclick="cycleTheme()" title="Toggle Theme (Light / Dark / Auto)"></button>
+            </div>
+        </header>
+
+        <!-- Feed Mode Alert Banner -->
+        <div class="feed-banner" id="feed-banner">
+            <div class="feed-text">
+                🫧 <strong>Feed Mode Active:</strong> Air pump temporarily paused (<span id="feed-timer">10:00</span> remaining).
+            </div>
+            <button class="btn btn-sm btn-secondary" onclick="stopFeedMode()">Cancel</button>
+        </div>
+
+        <!-- SYSTEM OVERVIEW (TOP DIAGNOSTICS) -->
+        <div class="card" style="padding: 14px 18px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <span style="font-size: 13px; font-weight: 700; color: var(--ocean-deep); text-transform: uppercase; letter-spacing: 0.5px;">System Overview</span>
+                <div class="sys-badge" id="wifi-badge" style="padding: 4px 10px; font-size: 12px;">
+                    <span class="status-dot dot-green" id="wifi-dot"></span>
+                    <span id="wifi-status-text">Connected</span>
+                </div>
+            </div>
+            <div class="compact-grid overview-grid">
+                <div class="stat-block">
+                    <span class="stat-label">System Mode</span>
+                    <span class="stat-val" id="mode-val">Day (Normal)</span>
+                </div>
+                <div class="stat-block">
+                    <span class="stat-label">NTP Clock</span>
+                    <span class="stat-val" id="time-val">00:00:00</span>
+                </div>
+                <div class="stat-block">
+                    <span class="stat-label">System Uptime</span>
+                    <span class="stat-val" id="uptime-val">0s</span>
+                </div>
+                <div class="stat-block">
+                    <span class="stat-label">WiFi Network</span>
+                    <span class="stat-val" id="ssid-val">-</span>
+                </div>
+                <div class="stat-block">
+                    <span class="stat-label">WiFi Signal</span>
+                    <span class="stat-val" id="rssi-val">-65 dBm</span>
+                </div>
+                <div class="stat-block">
+                    <span class="stat-label">IP Address</span>
+                    <span class="stat-val" id="ip-val">192.168.1.32</span>
+                </div>
+                <div class="stat-block" id="tailscale-stat-block" style="cursor: pointer;" role="button" tabindex="0" onclick="openTailscaleRemote()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openTailscaleRemote();}" title="Open remote access via Nexus Gateway">
+                    <span class="stat-label">Nexus Remote</span>
+                    <span class="stat-val" style="display: flex; align-items: center; gap: 6px; font-size: 12px;">
+                        <span class="status-dot dot-orange" id="tailscale-dot"></span>
+                        <span id="tailscale-status-text" style="font-family: 'JetBrains Mono', monospace; font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Checking...</span>
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 1. 24H SCHEDULE & REAL-TIME STATUS -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">1. 24h Schedule & Real-Time Status</div>
+                <div class="timeline-legend">
+                    <span class="legend-item"><span class="legend-swatch swatch-cont"></span> Continuous</span>
+                    <span class="legend-item"><span class="legend-swatch swatch-pulse"></span> Pulse (Hatched)</span>
+                    <span class="legend-item"><span class="legend-swatch swatch-off"></span> Off</span>
+                </div>
+            </div>
+
+            <!-- Scrollable 24-Hour 4-Track Timeline -->
+            <div class="timeline-scroll-wrapper" id="timeline-scroll-box">
+                <div class="timeline-scroll-content">
+                    <div class="timeline-ruler">
+                        <div class="timeline-ruler-spacer"></div>
+                        <div class="timeline-ruler-ticks" id="timeline-ruler-ticks">
+                            <!-- 24 ticks generated dynamically (00 to 23) -->
+                        </div>
+                    </div>
+                    <div style="position: relative;">
+                        <div id="timeline-tracks" style="display: flex; flex-direction: column;">
+                            <!-- Populated dynamically via renderTimeline() -->
+                        </div>
+                        <div id="timeline-now-cursor" class="timeline-now-line" style="display: none;">
+                            <div class="timeline-now-pin" id="timeline-now-pin">12:41</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <p style="font-size: 11px; color: var(--text-muted); margin: -4px 0 2px;">💡 Tap hour blocks to toggle ON / OFF, then press <strong>Apply to device</strong>. Click a channel name to edit its mode and pulse timing.</p>
+
+            <!-- Unsaved schedule draft (changes stay local until applied) -->
+            <div class="draft-bar" id="draft-bar" role="status">
+                <span>● Unsaved schedule changes — not yet applied to the device</span>
+                <div class="draft-bar-actions">
+                    <button type="button" class="btn btn-sm btn-secondary" onclick="discardDraft()">↺ Discard</button>
+                    <button type="button" class="btn btn-sm" id="btn-apply-draft" onclick="applyDraft()">✓ Apply to device</button>
+                </div>
+            </div>
+
+            <!-- Active Channel Mode & Pulse Settings -->
+            <div style="border-top: 1.5px solid var(--border-subtle); padding-top: 12px; margin-top: 6px;">
+                <div id="channel-editor-prompt" style="font-size: 12px; color: var(--text-muted); padding: 4px 0; display: block;">
+                    Select a channel above to edit its mode and pulse timing.
+                </div>
+                <div id="channel-editor-box" style="display: none;">
+                    <div style="margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px;">
+                        <span id="selected-channel-label" style="font-size: 12px; font-weight: 700; color: var(--ocean-deep);">Editing Channel: 1. LUMINA</span>
+                        <button type="button" class="btn btn-sm btn-secondary" style="padding: 2px 8px; font-size: 11px;" onclick="selectRelayTrack(selectedRelayNum)" title="Close channel settings">✖ Deselect</button>
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; align-items: start;">
+                        <div class="form-group">
+                            <label for="relay-behavior">Mode During Active Hours</label>
+                            <select id="relay-behavior" onchange="onBehaviorChanged(this.value)">
+                                <option value="0">Continuous (ON)</option>
+                                <option value="1">Intermittent / Pulse</option>
+                            </select>
+                            <small id="behavior-help-text" style="font-size: 11px; color: var(--text-muted); margin-top: 3px;">Relay stays energized throughout selected hours.</small>
+                        </div>
+                        
+                        <div id="pulse-settings-row" style="display: none;">
+                            <label style="margin-bottom: 5px; display: block;">Pulse Cycle (mm:ss)</label>
+                            <div class="pulse-compact-box">
+                                <div class="pulse-input-group">
+                                    <span style="font-size: 11px; font-weight: 700; color: var(--text-secondary);">⏱️ ON:</span>
+                                    <input type="text" id="pulse-on-time" class="pulse-time-input" placeholder="01:00" value="01:00" maxlength="5" onchange="onPulseTimeFormattedChanged()" title="Running duration (minutes:seconds, e.g. 05:00)">
+                                </div>
+                                <div class="pulse-input-group">
+                                    <span style="font-size: 11px; font-weight: 700; color: var(--text-secondary);">⏸️ OFF:</span>
+                                    <input type="text" id="pulse-off-time" class="pulse-time-input" placeholder="02:00" value="02:00" maxlength="5" onchange="onPulseTimeFormattedChanged()" title="Rest pause duration (minutes:seconds, e.g. 25:00)">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Presets Management -->
+            <div style="border-top: 1.5px solid var(--border-subtle); padding-top: 12px; margin-top: 8px; display: flex; flex-direction: column; gap: 8px;">
+                <label>Schedule Presets</label>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+                    <select id="preset-select" style="flex: 1; min-width: 140px;" onchange="onPresetSelected(this.value)">
+                        <!-- Populated dynamically via API -->
+                    </select>
+                    <div class="preset-toolbar">
+                        <button class="btn-icon" id="btn-save-preset" onclick="saveCurrentPreset()" title="Save schedule to preset" aria-label="Save schedule to preset">💾</button>
+                        <button class="btn-icon" id="btn-restore-preset" style="display: none;" onclick="discardDraft()" title="Discard unsaved changes" aria-label="Discard unsaved changes">↺</button>
+                        <button class="btn-icon" id="btn-rename-preset" style="display: none;" onclick="openRenamePresetModal()" title="Rename preset" aria-label="Rename preset">✏️</button>
+                        <button class="btn-icon" id="btn-new-preset" onclick="openNewPresetModal()" title="New preset" aria-label="New preset">➕</button>
+                        <button class="btn-icon btn-icon-danger" id="btn-delete-preset" style="display: none;" onclick="openDeletePresetModal()" title="Delete preset" aria-label="Delete preset">🗑️</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. MANUAL CONTROL -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">2. Manual Control</div>
+                <div class="segmented-control">
+                    <button class="btn btn-sm btn-warning" id="btn-feed-mode" onclick="toggleFeedMode()" title="Feed Mode: Pause air pump for 10 minutes">🍽️ Feed Mode</button>
+                    <button class="btn btn-secondary btn-sm" onclick="clearOverrides()" title="Return all relays to auto schedule">⚡ Auto All</button>
+                </div>
+            </div>
+            <div id="relays-container" style="display: flex; flex-direction: column; gap: 10px;">
+                <!-- Dynamically populated from status -->
+            </div>
+        </div>
+
+        <!-- 3. DIGITAL INPUTS & SENSORS (I/O) -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">3. Digital Inputs & Sensors</div>
+            </div>
+            <div class="compact-grid">
+                <div class="stat-block">
+                    <span class="stat-label" id="lbl-gpio0">GPIO 0 (Power Sensor)</span>
+                    <span class="stat-val" id="input-gpio0"><span class="status-dot dot-orange"></span> ...</span>
+                </div>
+                <div class="stat-block">
+                    <span class="stat-label" id="lbl-gpio4">GPIO 4 (Aux/Free)</span>
+                    <span class="stat-val" id="input-gpio4"><span class="status-dot dot-orange"></span> ...</span>
+                </div>
+                <div class="stat-block">
+                    <span class="stat-label" id="lbl-gpio2">GPIO 2 (Aux/Free)</span>
+                    <span class="stat-val" id="input-gpio2"><span class="status-dot dot-orange"></span> ...</span>
+                </div>
+                <div class="stat-block">
+                    <span class="stat-label" id="lbl-gpio15">GPIO 15 (Aux/Free)</span>
+                    <span class="stat-val" id="input-gpio15"><span class="status-dot dot-orange"></span> ...</span>
+                </div>
+            </div>
+            
+            <!-- Analog Light Sensor Live Bar -->
+            <div style="margin-top: 8px; display: flex; flex-direction: column; gap: 6px;">
+                <div style="display: flex; justify-content: space-between; font-size: 13px;">
+                    <span id="lbl-analog">Light Sensor (A0)</span>
+                    <span id="light-percent-label" style="font-weight: 700; color: var(--accent-primary)">0%</span>
+                </div>
+                <div style="background: rgba(255,255,255,0.06); border-radius: 8px; height: 12px; overflow: hidden;">
+                    <div id="light-meter-bar" style="height: 100%; width: 0%; background: linear-gradient(90deg, #0284c7, #38bdf8, #fbbf24); border-radius: 8px; transition: width 0.4s ease;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. EVENT HISTORY (TIMELINE) -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">4. Event History</div>
+                <button class="btn btn-secondary btn-sm" onclick="fetchHistory()">Refresh</button>
+            </div>
+            <div class="timeline-container" id="timeline-container">
+                <p style="font-size: 13px; color: var(--text-secondary)">Loading event history...</p>
+            </div>
+        </div>
+
+        <!-- 5. SYSTEM ADMINISTRATION -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">5. System Administration</div>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px;">
+                <button class="btn btn-secondary" onclick="openNamesModal()">✏️ Customize I/O</button>
+                <button class="btn btn-secondary" onclick="openWifiModal()">📶 WiFi Setup</button>
+                <button class="btn" onclick="window.open('/update', '_blank')">⬆️ Firmware Update</button>
+            </div>
+        </div>
+
+        <!-- Modal Customize I/O Names -->
+        <div id="names-modal" class="modal" role="dialog" aria-modal="true">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Customize Peripheral Names</h2>
+                    <button type="button" class="close-btn" onclick="closeNamesModal()" aria-label="Close">&times;</button>
+                </div>
+                <div class="form-group">
+                    <label>Relay 1 Name (GPIO 16)</label>
+                    <input type="text" id="name-r1" maxlength="31">
+                </div>
+                <div class="form-group">
+                    <label>Relay 2 Name (GPIO 14)</label>
+                    <input type="text" id="name-r2" maxlength="31">
+                </div>
+                <div class="form-group">
+                    <label>Relay 3 Name (GPIO 12)</label>
+                    <input type="text" id="name-r3" maxlength="31">
+                </div>
+                <div class="form-group">
+                    <label>Relay 4 Name (GPIO 13)</label>
+                    <input type="text" id="name-r4" maxlength="31">
+                </div>
+                <div class="form-group">
+                    <label>GPIO 0 Input Name</label>
+                    <input type="text" id="name-in0" maxlength="31">
+                </div>
+                <div class="form-group">
+                    <label>GPIO 4 Input Name</label>
+                    <input type="text" id="name-in4" maxlength="31">
+                </div>
+                <div class="form-group">
+                    <label>GPIO 2 Input Name</label>
+                    <input type="text" id="name-in2" maxlength="31">
+                </div>
+                <div class="form-group">
+                    <label>GPIO 15 Input Name</label>
+                    <input type="text" id="name-in15" maxlength="31">
+                </div>
+                <div class="form-group">
+                    <label>Analog Sensor (A0) Name</label>
+                    <input type="text" id="name-a0" maxlength="31">
+                </div>
+                <button class="btn" onclick="saveCustomNames()">💾 Save Names</button>
+            </div>
+        </div>
+
+        <!-- Modal Create New Preset -->
+        <div id="save-preset-modal" class="modal" role="dialog" aria-modal="true">
+            <div class="modal-content" style="max-width: 380px;">
+                <div class="modal-header">
+                    <h2>Create New Preset</h2>
+                    <button type="button" class="close-btn" onclick="closeNewPresetModal()" aria-label="Close">&times;</button>
+                </div>
+                <div class="form-group" style="margin-top: 10px;">
+                    <label for="new-preset-name">Preset Name</label>
+                    <input type="text" id="new-preset-name" placeholder="e.g. Summer Schedule, Treatment..." maxlength="31" onkeydown="if(event.key==='Enter')confirmSaveNewPreset()">
+                </div>
+                <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 12px;">
+                    <button class="btn btn-sm btn-secondary" onclick="closeNewPresetModal()">Cancel</button>
+                    <button class="btn btn-sm" id="btn-confirm-save-preset" onclick="confirmSaveNewPreset()">Save Preset</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Rename Preset -->
+        <div id="rename-preset-modal" class="modal" role="dialog" aria-modal="true">
+            <div class="modal-content" style="max-width: 380px;">
+                <div class="modal-header">
+                    <h2>Rename Preset</h2>
+                    <button type="button" class="close-btn" onclick="closeRenamePresetModal()" aria-label="Close">&times;</button>
+                </div>
+                <div class="form-group" style="margin-top: 10px;">
+                    <label for="rename-preset-name">New Preset Name</label>
+                    <input type="text" id="rename-preset-name" maxlength="31" onkeydown="if(event.key==='Enter')confirmRenamePreset()">
+                </div>
+                <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 12px;">
+                    <button class="btn btn-sm btn-secondary" onclick="closeRenamePresetModal()">Cancel</button>
+                    <button class="btn btn-sm" onclick="confirmRenamePreset()">Save Name</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Delete Preset Confirmation -->
+        <div id="delete-preset-modal" class="modal" role="dialog" aria-modal="true">
+            <div class="modal-content" style="max-width: 360px;">
+                <div class="modal-header">
+                    <h2>Delete Preset</h2>
+                    <button type="button" class="close-btn" onclick="closeDeletePresetModal()" aria-label="Close">&times;</button>
+                </div>
+                <p style="font-size: 13px; color: var(--text-secondary); margin-top: 8px;">
+                    Are you sure you want to permanently delete preset <strong id="delete-preset-name-lbl"></strong>?
+                </p>
+                <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 14px;">
+                    <button class="btn btn-sm btn-secondary" onclick="closeDeletePresetModal()">Cancel</button>
+                    <button class="btn btn-sm btn-danger" onclick="confirmDeletePreset()">Delete</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Generic Confirm Modal (replaces native confirm()) -->
+        <div id="confirm-modal" class="modal" role="dialog" aria-modal="true">
+            <div class="modal-content" style="max-width: 380px;">
+                <div class="modal-header">
+                    <h2 id="confirm-title">Confirm</h2>
+                    <button type="button" class="close-btn" onclick="resolveConfirm(false)" aria-label="Close">&times;</button>
+                </div>
+                <p id="confirm-msg" style="font-size: 13px; color: var(--text-secondary); margin-top: 8px;"></p>
+                <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 14px;">
+                    <button type="button" class="btn btn-sm btn-secondary" onclick="resolveConfirm(false)">Cancel</button>
+                    <button type="button" class="btn btn-sm" id="confirm-ok-btn" onclick="resolveConfirm(true)">OK</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal WiFi Setup -->
+        <div id="wifi-modal" class="modal" role="dialog" aria-modal="true">
+            <div class="modal-content" style="max-width: 380px;">
+                <div class="modal-header">
+                    <h2>WiFi Setup</h2>
+                    <button type="button" class="close-btn" onclick="closeWifiModal()" aria-label="Close">&times;</button>
+                </div>
+                <div class="form-group">
+                    <label for="wifi-ssid">Network SSID</label>
+                    <input type="text" id="wifi-ssid" placeholder="Local WiFi Network Name">
+                </div>
+                <div class="form-group">
+                    <label for="wifi-pass">Password</label>
+                    <input type="password" id="wifi-pass" placeholder="••••••••">
+                </div>
+                <p style="font-size: 11px; color: var(--text-muted);">The device will disconnect and join the new network. Its own access point <strong>BioBox-Aquarium</strong> (192.168.4.1) stays available for recovery.</p>
+                <button class="btn" onclick="saveWifiAndClose()">Connect Device</button>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="aquarium-footer">
+            <div style="font-weight: 700; font-size: 13px; color: var(--text-primary);">🐠 Aquatlantis Smart Aquarium Controller</div>
+            <div style="font-size: 11px; color: var(--text-muted);">Designed &amp; Implemented by <strong>Bogdan S.</strong> • Firmware v3.5.0</div>
+        </footer>
+    </div>
+
+    <!-- Dynamic Multi-Stream Animated Bubbles (Micro, Small, Medium, Large) -->
+    <div class="bubbles-layer" aria-hidden="true">
+        <!-- Diffuser / Airstone Stream (Left) -->
+        <div class="bubble bubble-fast" style="width: 4px; height: 4px; left: 13%; animation-duration: 6.8s; animation-delay: -2s;"></div>
+        <div class="bubble bubble-wobble-1" style="width: 8px; height: 8px; left: 15%; animation-duration: 11s; animation-delay: -6s;"></div>
+        <div class="bubble bubble-fast" style="width: 5px; height: 5px; left: 14%; animation-duration: 6.2s; animation-delay: -4s;"></div>
+        <div class="bubble bubble-wobble-2" style="width: 12px; height: 12px; left: 16%; animation-duration: 13s; animation-delay: -9s;"></div>
+        <!-- Ambient Left -->
+        <div class="bubble bubble-wobble-1" style="width: 22px; height: 22px; left: 6%; animation-duration: 18s; animation-delay: -11s;"></div>
+        <div class="bubble bubble-fast" style="width: 5px; height: 5px; left: 9%; animation-duration: 8s; animation-delay: -4s;"></div>
+        <div class="bubble bubble-wobble-2" style="width: 16px; height: 16px; left: 22%; animation-duration: 14s; animation-delay: -6s;"></div>
+        <div class="bubble bubble-fast" style="width: 3px; height: 3px; left: 26%; animation-duration: 6.2s; animation-delay: -2.5s;"></div>
+        <div class="bubble bubble-wobble-1" style="width: 10px; height: 10px; left: 33%; animation-duration: 12s; animation-delay: -8.5s;"></div>
+        <div class="bubble bubble-wobble-2" style="width: 26px; height: 26px; left: 38%; animation-duration: 21s; animation-delay: -14s;"></div>
+        <div class="bubble bubble-fast" style="width: 4px; height: 4px; left: 42%; animation-duration: 7s; animation-delay: -5s;"></div>
+        <!-- Center Column Stream -->
+        <div class="bubble bubble-wobble-1" style="width: 6px; height: 6px; left: 47%; animation-duration: 10s; animation-delay: -3s;"></div>
+        <div class="bubble bubble-fast" style="width: 4px; height: 4px; left: 49%; animation-duration: 7.2s; animation-delay: -1s;"></div>
+        <div class="bubble bubble-wobble-2" style="width: 11px; height: 11px; left: 50%; animation-duration: 12s; animation-delay: -7s;"></div>
+        <!-- Ambient Right -->
+        <div class="bubble bubble-wobble-1" style="width: 18px; height: 18px; left: 58%; animation-duration: 15s; animation-delay: -9s;"></div>
+        <div class="bubble bubble-fast" style="width: 3px; height: 3px; left: 64%; animation-duration: 6.5s; animation-delay: -3s;"></div>
+        <div class="bubble bubble-wobble-2" style="width: 13px; height: 13px; left: 69%; animation-duration: 13s; animation-delay: -7.5s;"></div>
+        <div class="bubble bubble-wobble-1" style="width: 24px; height: 24px; left: 74%; animation-duration: 19s; animation-delay: -12s;"></div>
+        <div class="bubble bubble-fast" style="width: 5px; height: 5px; left: 78%; animation-duration: 7.8s; animation-delay: -4.5s;"></div>
+        <!-- Filter Outflow Stream (Right) -->
+        <div class="bubble bubble-fast" style="width: 4px; height: 4px; left: 81%; animation-duration: 6.8s; animation-delay: -1.5s;"></div>
+        <div class="bubble bubble-wobble-1" style="width: 14px; height: 14px; left: 82%; animation-duration: 12.5s; animation-delay: -8s;"></div>
+        <div class="bubble bubble-wobble-2" style="width: 9px; height: 9px; left: 83%; animation-duration: 10.5s; animation-delay: -5s;"></div>
+        <div class="bubble bubble-fast" style="width: 3px; height: 3px; left: 85%; animation-duration: 6s; animation-delay: -3.5s;"></div>
+        <!-- Ambient Far Right -->
+        <div class="bubble bubble-wobble-2" style="width: 8px; height: 8px; left: 91%; animation-duration: 11s; animation-delay: -6s;"></div>
+        <div class="bubble bubble-fast" style="width: 4px; height: 4px; left: 95%; animation-duration: 6.8s; animation-delay: -2s;"></div>
+        <div class="bubble bubble-wobble-1" style="width: 20px; height: 20px; left: 97%; animation-duration: 16s; animation-delay: -10s;"></div>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite">Notification</div>
+
+    <script>
+        // ---- Configuration -------------------------------------------------
+        const NEXUS = {
+            remoteHosts: ['100.83.135.74', 'cinderella'],   // hostnames that mean "opened through the tunnel"
+            remoteUrl: 'http://100.83.135.74:8080/',
+            lanProbeUrl: 'http://192.168.1.28:8080/api/status',
+            probeIntervalMs: 30000
+        };
+        const DEFAULT_RELAY_NAMES = ["Main Light", "CO2 Solenoid", "Air Pump", "Aux Relay"];
+        const RELAY_GPIO = [16, 14, 12, 13];
+        const POLL_MS = 2000;
+        const SVG_POWER = '<svg style="vertical-align:middle;margin-right:2px;display:inline-block;" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M12 2v9M18.36 6.64A9 9 0 1 1 5.63 6.64"/></svg>';
+
+        // ---- State ----------------------------------------------------------
+        let schedules = [];        // editable draft (local until applied)
+        let savedSchedules = [];   // schedule currently running on the device
+        let presetsList = [];
+        let currentNames = null;
+        let activePresetId = 1;
+        let selectedRelayNum = 1;
+        let isScheduleDirty = false;
+        let isFeedActive = false;
+        let currentTheme = safeGet('aquarium_theme') || 'auto';
+        let lastKnownMode = 'Day';
+        let lastTimeStr = '';
+        let lastHistoryRev = -1;
+        let lastRelayStates = null;
+
+        // ---- Small helpers --------------------------------------------------
+        function safeGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+        function safeSet(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* storage unavailable */ } }
+
+        function esc(v) {
+            return String(v == null ? '' : v).replace(/[&<>"']/g, c => (
+                { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        }
+        function setText(el, t) { if (el && el.textContent !== t) el.textContent = t; }
+        function setClass(el, c) { if (el && el.className !== c) el.className = c; }
+        function relayName(num) {
+            return (currentNames && currentNames.relays && currentNames.relays[num - 1]) || DEFAULT_RELAY_NAMES[num - 1] || `Relay ${num}`;
+        }
+        function gpioOf(num) { return RELAY_GPIO[num - 1]; }
+        function cloneSchedules(list) { return list.map(s => Object.assign({}, s)); }
+        function postForm(url, body) {
+            return fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: body
+            });
+        }
+        function withTimeout(ms) {
+            return (window.AbortSignal && AbortSignal.timeout) ? AbortSignal.timeout(ms) : undefined;
+        }
+
+        // ---- Theme ------------------------------------------------------------
+        // "Auto" follows the aquarium day: dark while the main light (relay 1) is scheduled OFF.
+        function isNightNow() {
+            const r1 = savedSchedules.find(s => s.num == 1);
+            const hr = parseInt((lastTimeStr || '').split(':')[0], 10);
+            if (r1 && !isNaN(hr)) return (r1.active_hours & (1 << hr)) === 0;
+            return lastKnownMode === 'Night';
+        }
+
+        function applyTheme(theme) {
+            let effective = theme;
+            if (theme === 'auto') effective = isNightNow() ? 'dark' : 'light';
+            if (document.documentElement.getAttribute('data-theme') !== effective) {
+                document.documentElement.setAttribute('data-theme', effective);
+            }
+            const btn = document.getElementById('theme-toggle-btn');
+            if (!btn) return;
+            if (theme === 'light') {
+                setText(btn, '☀️ Light');
+                btn.title = 'Theme: Light (click for Dark)';
+            } else if (theme === 'dark') {
+                setText(btn, '🌙 Dark');
+                btn.title = 'Theme: Dark (click for Auto)';
+            } else {
+                setText(btn, (effective === 'dark') ? '🌓 Auto (Night)' : '🌓 Auto (Day)');
+                btn.title = 'Theme: Auto - dark while the main light is scheduled off (click for Light)';
+            }
+        }
+
+        function cycleTheme() {
+            if (currentTheme === 'auto') currentTheme = 'light';
+            else if (currentTheme === 'light') currentTheme = 'dark';
+            else currentTheme = 'auto';
+            safeSet('aquarium_theme', currentTheme);
+            applyTheme(currentTheme);
+            showToast(`Theme switched to: ${currentTheme.toUpperCase()}`);
+        }
+
+        // ---- Toast ------------------------------------------------------------
+        let toastTimer = null;
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            if (!t) return;
+            t.textContent = msg;
+            t.classList.add('show');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => t.classList.remove('show'), 3500);
+        }
+
+        // ---- Modals -----------------------------------------------------------
+        let lastFocusBeforeModal = null;
+        function openModal(id) {
+            const m = document.getElementById(id);
+            if (!m) return;
+            lastFocusBeforeModal = document.activeElement;
+            m.classList.add('show');
+            const first = m.querySelector('input, select, button:not(.close-btn)');
+            if (first) setTimeout(() => first.focus(), 0);
+        }
+        function closeModal(id) {
+            const m = document.getElementById(id);
+            if (!m || !m.classList.contains('show')) return;
+            m.classList.remove('show');
+            if (lastFocusBeforeModal && lastFocusBeforeModal.focus) lastFocusBeforeModal.focus();
+        }
+
+        let confirmResolver = null;
+        // Promise-based replacement for window.confirm() that matches the dashboard style
+        function askConfirm(title, msg, okLabel = 'OK', danger = false) {
+            setText(document.getElementById('confirm-title'), title);
+            setText(document.getElementById('confirm-msg'), msg);
+            const ok = document.getElementById('confirm-ok-btn');
+            ok.textContent = okLabel;
+            ok.className = 'btn btn-sm' + (danger ? ' btn-danger' : '');
+            openModal('confirm-modal');
+            return new Promise(resolve => { confirmResolver = resolve; });
+        }
+        function resolveConfirm(value) {
+            closeModal('confirm-modal');
+            if (confirmResolver) {
+                const r = confirmResolver;
+                confirmResolver = null;
+                r(value);
+            }
+        }
+
+        const MODAL_CLOSERS = {
+            'names-modal': () => closeNamesModal(),
+            'save-preset-modal': () => closeNewPresetModal(),
+            'rename-preset-modal': () => closeRenamePresetModal(),
+            'delete-preset-modal': () => closeDeletePresetModal(),
+            'wifi-modal': () => closeWifiModal(),
+            'confirm-modal': () => resolveConfirm(false)
+        };
+        document.addEventListener('keydown', e => {
+            if (e.key !== 'Escape') return;
+            const open = Array.from(document.querySelectorAll('.modal.show')).pop();
+            if (open && MODAL_CLOSERS[open.id]) MODAL_CLOSERS[open.id]();
+        });
+        document.querySelectorAll('.modal').forEach(m => {
+            m.addEventListener('click', e => {
+                if (e.target === m && MODAL_CLOSERS[m.id]) MODAL_CLOSERS[m.id]();
+            });
+        });
+
+        // ---- Formatting -------------------------------------------------------
+        function formatUptime(sec) {
+            const d = Math.floor(sec / 86400);
+            const h = Math.floor((sec % 86400) / 3600);
+            const m = Math.floor((sec % 3600) / 60);
+            const s = sec % 60;
+            return d > 0 ? `${d}d ${h}h ${m}m` : `${h}h ${m}m ${s}s`;
+        }
+
+        function formatMMSS(sec) {
+            const m = Math.floor(sec / 60);
+            const s = sec % 60;
+            return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+        }
+
+        function parseMMSS(str) {
+            if (!str) return 60;
+            const parts = str.trim().split(':');
+            if (parts.length === 1) {
+                const val = parseInt(parts[0], 10);
+                return isNaN(val) ? 60 : Math.max(1, val);
+            }
+            const m = parseInt(parts[0], 10) || 0;
+            const s = parseInt(parts[1], 10) || 0;
+            return Math.max(1, m * 60 + s);
+        }
+
+        function formatPulse(sec) {
+            const m = Math.floor(sec / 60);
+            const s = sec % 60;
+            return m > 0 ? (s > 0 ? `${m}m${s}s` : `${m}m`) : `${s}s`;
+        }
+
+        // ---- Channel editor ---------------------------------------------------
+        function selectRelayTrack(num) {
+            const n = parseInt(num, 10);
+            selectedRelayNum = (selectedRelayNum === n) ? 0 : n;   // click again to deselect
+            document.querySelectorAll('.timeline-track-row').forEach(row => {
+                row.classList.toggle('selected', parseInt(row.dataset.relay, 10) === selectedRelayNum);
+            });
+            updateChannelEditorUI();
+        }
+
+        function updateChannelLabel() {
+            const lbl = document.getElementById('selected-channel-label');
+            if (!lbl || selectedRelayNum === 0) return;
+            const html = `Editing Channel: <strong>${selectedRelayNum}. ${esc(relayName(selectedRelayNum))}</strong> (GPIO ${gpioOf(selectedRelayNum)})`;
+            if (lbl.dataset.html !== html) {
+                lbl.innerHTML = html;
+                lbl.dataset.html = html;
+            }
+        }
+
+        function updateChannelEditorUI() {
+            const promptEl = document.getElementById('channel-editor-prompt');
+            const boxEl = document.getElementById('channel-editor-box');
+            if (selectedRelayNum === 0) {
+                if (promptEl) promptEl.style.display = 'block';
+                if (boxEl) boxEl.style.display = 'none';
+                return;
+            }
+            if (promptEl) promptEl.style.display = 'none';
+            if (boxEl) boxEl.style.display = 'block';
+
+            const sched = schedules.find(s => s.num == selectedRelayNum);
+            if (!sched) return;
+
+            updateChannelLabel();
+
+            const behEl = document.getElementById('relay-behavior');
+            if (behEl) behEl.value = sched.behavior;
+            onBehaviorChanged(sched.behavior);
+
+            const pOn = document.getElementById('pulse-on-time');
+            const pOff = document.getElementById('pulse-off-time');
+            if (pOn) pOn.value = formatMMSS(sched.pulse_on);
+            if (pOff) pOff.value = formatMMSS(sched.pulse_off);
+        }
+
+        function onBehaviorChanged(val) {
+            const row = document.getElementById('pulse-settings-row');
+            if (row) row.style.display = (val == "1") ? 'block' : 'none';
+            const helpText = document.getElementById('behavior-help-text');
+            if (helpText) {
+                helpText.innerText = (val == "1")
+                    ? "Relay cycles between running and resting in active hours."
+                    : "Relay stays energized throughout selected hours.";
+            }
+            if (selectedRelayNum === 0) return;
+            const sched = schedules.find(s => s.num == selectedRelayNum);
+            if (sched && sched.behavior != val) {
+                sched.behavior = parseInt(val, 10);
+                markScheduleModified();
+            }
+        }
+
+        function onPulseTimeFormattedChanged() {
+            if (selectedRelayNum === 0) return;
+            const sched = schedules.find(s => s.num == selectedRelayNum);
+            const onInput = document.getElementById('pulse-on-time');
+            const offInput = document.getElementById('pulse-off-time');
+            if (!sched || !onInput || !offInput) return;
+
+            sched.pulse_on = parseMMSS(onInput.value);
+            sched.pulse_off = parseMMSS(offInput.value);
+            onInput.value = formatMMSS(sched.pulse_on);
+            offInput.value = formatMMSS(sched.pulse_off);
+            markScheduleModified();
+        }
+
+        // ---- Schedule draft (edits stay local until "Apply to device") -------
+        function markScheduleModified() {
+            isScheduleDirty = JSON.stringify(schedules) !== JSON.stringify(savedSchedules);
+            updateSaveButtonIndicator();
+            renderTimeline();
+        }
+
+        function updateSaveButtonIndicator() {
+            const btnSave = document.getElementById('btn-save-preset');
+            const btnRestore = document.getElementById('btn-restore-preset');
+            const bar = document.getElementById('draft-bar');
+            if (btnSave) {
+                btnSave.classList.toggle('btn-icon-dirty', isScheduleDirty);
+                btnSave.title = isScheduleDirty ? "Save schedule to preset (unsaved changes)" : "Save schedule to preset";
+            }
+            if (btnRestore) btnRestore.style.display = isScheduleDirty ? 'inline-flex' : 'none';
+            if (bar) bar.classList.toggle('show', isScheduleDirty);
+        }
+
+        function discardDraft() {
+            if (!isScheduleDirty) return;
+            schedules = cloneSchedules(savedSchedules);
+            isScheduleDirty = false;
+            updateSaveButtonIndicator();
+            updateChannelEditorUI();
+            renderTimeline();
+            showToast("Unsaved changes discarded.");
+        }
+
+        // Sends all 4 channels in one request: one flash write and one log entry on the device
+        async function commitSchedules() {
+            const parts = [];
+            for (let r = 1; r <= 4; r++) {
+                const s = schedules.find(x => x.num == r);
+                if (!s) return false;
+                parts.push(`r${r}_hours=${s.active_hours}&r${r}_behavior=${s.behavior}&r${r}_on=${s.pulse_on}&r${r}_off=${s.pulse_off}`);
+            }
+            try {
+                const res = await postForm('/api/schedule', parts.join('&'));
+                if (!res.ok) return false;
+                savedSchedules = cloneSchedules(schedules);
+                isScheduleDirty = false;
+                updateSaveButtonIndicator();
+                renderTimeline();
+                return true;
+            } catch (err) {
+                console.error("Schedule commit error:", err);
+                return false;
+            }
+        }
+
+        async function applyDraft() {
+            const btn = document.getElementById('btn-apply-draft');
+            if (btn) btn.disabled = true;
+            const ok = await commitSchedules();
+            if (btn) btn.disabled = false;
+            showToast(ok ? "Schedule applied to device." : "Could not apply schedule - check the connection.");
+            if (ok) refreshStatus();
+        }
+
+        window.addEventListener('beforeunload', e => {
+            if (isScheduleDirty) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        });
+
+        async function fetchSchedules() {
+            try {
+                const res = await fetch('/api/schedule');
+                const data = await res.json();
+                savedSchedules = data;
+                schedules = cloneSchedules(data);
+                isScheduleDirty = false;
+                updateSaveButtonIndicator();
+                updateChannelEditorUI();
+                renderTimeline();
+                autoScrollTimeline();
+                if (currentTheme === 'auto') applyTheme('auto');
+            } catch (err) {
+                console.error("Error fetching schedules:", err);
+            }
+        }
+
+        // ---- Event history ----------------------------------------------------
+        function eventClass(msg) {
+            if (/restored/i.test(msg)) return 'event-restored';
+            if (msg.includes('[PWR]') || msg.includes('Power Outage')) return 'event-pwr-alert';
+            if (msg.includes('[WIFI]') || msg.includes('WiFi')) return 'event-wifi-alert';
+            return '';
+        }
+
+        async function fetchHistory() {
+            try {
+                const res = await fetch('/api/history');
+                const data = await res.json();
+                const container = document.getElementById('timeline-container');
+                const keepScroll = container.scrollTop;
+                container.innerHTML = '';
+
+                if (data.length === 0) {
+                    const p = document.createElement('p');
+                    p.style.cssText = 'font-size: 13px; color: var(--text-secondary)';
+                    p.textContent = 'No event logs recorded yet.';
+                    container.appendChild(p);
+                    return;
+                }
+
+                data.reverse().forEach(event => {
+                    let t = event.time || '';
+                    if (/^\d{4}[-/]\d{2}[-/]\d{2}/.test(t)) {
+                        const parts = t.split(' ');
+                        const dp = parts[0].split(/[-/]/);
+                        t = `${dp[2]}.${dp[1]}${parts[1] ? ' ' + parts[1] : ''}`;
+                    }
+                    const msg = event.msg || '';
+                    const item = document.createElement('div');
+                    item.className = 'timeline-item';
+                    const timeEl = document.createElement('span');
+                    timeEl.className = 'timeline-time';
+                    timeEl.textContent = t;
+                    const msgEl = document.createElement('span');
+                    msgEl.className = ('timeline-msg ' + eventClass(msg)).trim();
+                    msgEl.textContent = msg;
+                    item.appendChild(timeEl);
+                    item.appendChild(msgEl);
+                    container.appendChild(item);
+                });
+                container.scrollTop = keepScroll;
+            } catch (err) {
+                console.error("Error fetching history:", err);
+            }
+        }
+
+        // ---- 24h timeline -----------------------------------------------------
+        let hasAutoScrolled = false;
+        function autoScrollTimeline() {
+            if (hasAutoScrolled) return;
+            const scrollBox = document.getElementById('timeline-scroll-box');
+            const firstGrid = document.querySelector('.timeline-bar-grid');
+            if (!scrollBox || !firstGrid) return;
+            let hr = parseInt((lastTimeStr || '').split(':')[0], 10);
+            if (isNaN(hr)) hr = new Date().getHours();
+            const slotWidth = firstGrid.offsetWidth / 24;
+            scrollBox.scrollLeft = Math.max(0, firstGrid.offsetLeft + (hr * slotWidth) - (scrollBox.clientWidth / 2));
+            hasAutoScrolled = true;
+        }
+
+        // Physical-state dot next to each channel name (uses the schedule running on the device)
+        function updateTimelineDot(relay) {
+            if (!relay) return;
+            const dot = document.getElementById(`dot-relay-${relay.num}`);
+            if (!dot) return;
+
+            let isHourActive = false;
+            let isPulseMode = false;
+            const sched = savedSchedules.find(s => s.num == relay.num);
+            if (sched) {
+                isPulseMode = (sched.behavior == 1);
+                const hr = parseInt((lastTimeStr || '').split(':')[0], 10);
+                if (!isNaN(hr)) isHourActive = (sched.active_hours & (1 << hr)) !== 0;
+            }
+            const name = relay.name || relayName(relay.num);
+
+            if (relay.state) {
+                if (isPulseMode && isHourActive && !relay.override) {
+                    setClass(dot, 'timeline-relay-dot dot-pulse-running');
+                    dot.title = `${name}: Pulse ON (running)`;
+                } else {
+                    setClass(dot, 'timeline-relay-dot dot-active');
+                    dot.title = `${name}: ON`;
+                }
+            } else if (relay.in_pause || (isPulseMode && isHourActive && !relay.override)) {
+                setClass(dot, 'timeline-relay-dot dot-pulse-paused');
+                dot.title = `${name}: Pulse pause (standby)`;
+            } else {
+                setClass(dot, 'timeline-relay-dot dot-idle');
+                dot.title = `${name}: OFF`;
+            }
+        }
+
+        function toggleHour(relayNum, h) {
+            const sched = schedules.find(s => s.num == relayNum);
+            if (!sched) return;
+            if (selectedRelayNum !== relayNum) selectRelayTrack(relayNum);
+            sched.active_hours ^= (1 << h);
+            markScheduleModified();
+            focusSlot(relayNum, h);
+        }
+
+        function focusSlot(relayNum, h) {
+            const el = document.querySelector(`.timeline-hour-slot[data-relay="${relayNum}"][data-hour="${h}"]`);
+            if (el) {
+                document.querySelectorAll('.timeline-hour-slot[tabindex="0"]').forEach(s => { if (s.dataset.relay == relayNum) s.tabIndex = -1; });
+                el.tabIndex = 0;
+                el.focus({ preventScroll: false });
+            }
+        }
+
+        function onSlotKey(e) {
+            const slot = e.target;
+            const relayNum = parseInt(slot.dataset.relay, 10);
+            const h = parseInt(slot.dataset.hour, 10);
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                toggleHour(relayNum, h);
+            } else if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+                e.preventDefault();
+                focusSlot(relayNum, (h + (e.key === 'ArrowRight' ? 1 : 23)) % 24);
+            } else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                e.preventDefault();
+                focusSlot(((relayNum - 1 + (e.key === 'ArrowDown' ? 1 : 3)) % 4) + 1, h);
+            }
+        }
+
+        function renderTimeline() {
+            const container = document.getElementById('timeline-tracks');
+            if (!container || !schedules || schedules.length === 0) return;
+
+            // Keep keyboard focus across re-renders
+            const focused = document.activeElement;
+            const refocus = (focused && focused.classList && focused.classList.contains('timeline-hour-slot'))
+                ? { r: focused.dataset.relay, h: focused.dataset.hour } : null;
+
+            container.innerHTML = '';
+
+            const ticksEl = document.getElementById('timeline-ruler-ticks');
+            if (ticksEl && ticksEl.children.length === 0) {
+                for (let h = 0; h < 24; h++) {
+                    const s = document.createElement('span');
+                    s.innerText = h.toString().padStart(2, '0');
+                    ticksEl.appendChild(s);
+                }
+            }
+
+            const nowHr = parseInt((lastTimeStr || '').split(':')[0], 10);
+
+            for (let i = 0; i < 4; i++) {
+                const relayNum = i + 1;
+                const sched = schedules.find(s => s.num == relayNum) || { active_hours: 0, behavior: 0, pulse_on: 60, pulse_off: 120 };
+                const customName = relayName(relayNum);
+                const isChannelEmpty = (sched.active_hours === 0);
+
+                const trackRow = document.createElement('div');
+                trackRow.className = 'timeline-track-row' + (relayNum === selectedRelayNum ? ' selected' : '') + (isChannelEmpty ? ' track-empty' : '');
+                trackRow.dataset.relay = relayNum;
+                trackRow.onclick = () => selectRelayTrack(relayNum);
+
+                const label = document.createElement('div');
+                label.className = 'timeline-relay-label';
+                label.title = `${customName} (click to edit channel)`;
+                label.setAttribute('role', 'button');
+                label.tabIndex = 0;
+                label.onkeydown = (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectRelayTrack(relayNum); }
+                };
+                const emptyBadge = isChannelEmpty ? ' <span style="font-size:9px;color:var(--text-muted);font-weight:700;margin-left:auto;padding-right:2px;">[OFF]</span>' : '';
+                label.innerHTML = `
+                    <span class="timeline-relay-dot dot-idle" id="dot-relay-${relayNum}"></span>
+                    <span style="overflow:hidden;text-overflow:ellipsis;">${esc(customName)}</span>${emptyBadge}
+                `;
+
+                const barGrid = document.createElement('div');
+                barGrid.className = 'timeline-bar-grid';
+                barGrid.style.position = 'relative';
+                barGrid.setAttribute('role', 'group');
+                barGrid.setAttribute('aria-label', `${customName} hourly schedule`);
+
+                // Roving tabindex: one tab stop per row, arrow keys move between hours
+                const tabHour = !isNaN(nowHr) ? nowHr : 0;
+
+                for (let h = 0; h < 24; h++) {
+                    const slot = document.createElement('div');
+                    slot.className = 'timeline-hour-slot';
+                    slot.dataset.relay = relayNum;
+                    slot.dataset.hour = h;
+                    slot.setAttribute('role', 'button');
+                    slot.tabIndex = (h === tabHour) ? 0 : -1;
+                    const isActive = (sched.active_hours & (1 << h)) !== 0;
+                    slot.setAttribute('aria-pressed', String(isActive));
+                    const hourLbl = `${h.toString().padStart(2, '0')}:00`;
+
+                    if (isActive) {
+                        if (sched.behavior == 1) {
+                            slot.classList.add(`slot-pulse-${relayNum}`);
+                            slot.title = `${customName} • ${hourLbl}\nPulse: ${formatPulse(sched.pulse_on)} ON / ${formatPulse(sched.pulse_off)} OFF\n(Tap to toggle OFF)`;
+                        } else {
+                            slot.classList.add(`slot-cont-${relayNum}`);
+                            slot.title = `${customName} • ${hourLbl}\nContinuous ON\n(Tap to toggle OFF)`;
+                        }
+                    } else {
+                        slot.classList.add('slot-off');
+                        slot.title = `${customName} • ${hourLbl}\nOFF\n(Tap to toggle ON)`;
+                    }
+                    slot.setAttribute('aria-label', `${customName} ${hourLbl} ${isActive ? 'on' : 'off'}`);
+
+                    slot.onclick = (e) => {
+                        e.stopPropagation();
+                        toggleHour(relayNum, h);
+                    };
+                    slot.onkeydown = onSlotKey;
+                    barGrid.appendChild(slot);
+                }
+
+                if (isChannelEmpty) {
+                    const notice = document.createElement('div');
+                    notice.className = 'timeline-empty-notice';
+                    notice.innerText = '⚪ All 24h OFF • Click any hour to schedule';
+                    barGrid.appendChild(notice);
+                }
+
+                trackRow.appendChild(label);
+                trackRow.appendChild(barGrid);
+                container.appendChild(trackRow);
+            }
+
+            if (lastRelayStates) lastRelayStates.forEach(relay => updateTimelineDot(relay));
+            if (lastTimeStr) updateTimelineNowCursor(lastTimeStr);
+            if (refocus) {
+                const el = document.querySelector(`.timeline-hour-slot[data-relay="${refocus.r}"][data-hour="${refocus.h}"]`);
+                if (el) {
+                    el.tabIndex = 0;
+                    el.focus({ preventScroll: true });
+                }
+            }
+        }
+
+        function updateTimelineNowCursor(timeStr) {
+            const cursor = document.getElementById('timeline-now-cursor');
+            const pin = document.getElementById('timeline-now-pin');
+            if (!cursor || !pin || !timeStr || timeStr === '00:00:00' || timeStr === '-') return;
+
+            const firstGrid = document.querySelector('.timeline-bar-grid');
+            if (!firstGrid) {
+                cursor.style.display = 'none';
+                return;
+            }
+
+            const parts = timeStr.split(':');
+            if (parts.length < 2) return;
+            const hr = parseInt(parts[0], 10);
+            const min = parseInt(parts[1], 10);
+            const sec = parts[2] ? parseInt(parts[2], 10) : 0;
+            if (isNaN(hr) || isNaN(min)) return;
+
+            const pct = Math.min(1.0, Math.max(0.0, (hr * 3600 + min * 60 + sec) / 86400));
+            cursor.style.left = `${firstGrid.offsetLeft + pct * firstGrid.offsetWidth}px`;
+            cursor.style.display = 'block';
+            setText(pin, `${hr.toString().padStart(2, '0')}:${min.toString().padStart(2, '0')}`);
+        }
+
+        window.addEventListener('resize', () => {
+            if (lastTimeStr) updateTimelineNowCursor(lastTimeStr);
+        });
+
+        // ---- Nexus remote indicator -------------------------------------------
+        let lastTailscaleCheck = 0;
+        let lastTailscaleState = null;
+        async function updateTailscaleIndicator() {
+            const dot = document.getElementById('tailscale-dot');
+            const text = document.getElementById('tailscale-status-text');
+            if (!dot || !text) return;
+
+            if (NEXUS.remoteHosts.includes(window.location.hostname)) {
+                setClass(dot, 'status-dot dot-green');
+                setText(text, 'Connected (Remote)');
+                text.title = 'Opened through the Nexus / Tailscale tunnel';
+                return;
+            }
+
+            const now = Date.now();
+            if (now - lastTailscaleCheck < NEXUS.probeIntervalMs && lastTailscaleState !== null) return;
+            lastTailscaleCheck = now;
+
+            try {
+                const res = await fetch(NEXUS.lanProbeUrl, { method: 'GET', signal: withTimeout(1500) });
+                if (res.ok) {
+                    setClass(dot, 'status-dot dot-green');
+                    setText(text, NEXUS.remoteUrl.replace(/^https?:\/\//, '').replace(/\/$/, ''));
+                    text.title = 'Nexus bridge active (click to open the remote link)';
+                    lastTailscaleState = true;
+                } else {
+                    setClass(dot, 'status-dot dot-orange');
+                    setText(text, 'Standby');
+                    lastTailscaleState = false;
+                }
+            } catch (e) {
+                setClass(dot, 'status-dot dot-idle');
+                setText(text, 'Local Only');
+                text.title = 'Nexus bridge not reachable from this network';
+                lastTailscaleState = false;
+            }
+        }
+
+        function openTailscaleRemote() {
+            window.open(NEXUS.remoteUrl, '_blank', 'noopener');
+        }
+
+        // ---- Presets ----------------------------------------------------------
+        function updatePresetButtons() {
+            const sel = document.getElementById('preset-select');
+            const curP = presetsList.find(x => x.id == (sel ? sel.value : 0));
+            const isUser = !!(curP && !curP.builtin);
+            const btnDel = document.getElementById('btn-delete-preset');
+            const btnRename = document.getElementById('btn-rename-preset');
+            if (btnDel) btnDel.style.display = isUser ? 'inline-flex' : 'none';
+            if (btnRename) btnRename.style.display = isUser ? 'inline-flex' : 'none';
+        }
+
+        async function fetchPresets() {
+            try {
+                const res = await fetch('/api/presets');
+                presetsList = await res.json();
+                const sel = document.getElementById('preset-select');
+                if (!sel) return;
+                sel.innerHTML = '';
+                presetsList.forEach(p => {
+                    const opt = document.createElement('option');
+                    opt.value = p.id;
+                    opt.textContent = p.name;
+                    sel.appendChild(opt);
+                });
+
+                if (activePresetId && presetsList.some(p => p.id == activePresetId)) {
+                    sel.value = activePresetId;
+                } else if (presetsList.length > 0) {
+                    activePresetId = presetsList[0].id;
+                    sel.value = activePresetId;
+                }
+                updatePresetButtons();
+            } catch (err) {
+                console.error("Error fetching presets:", err);
+            }
+        }
+
+        async function onPresetSelected(val) {
+            const sel = document.getElementById('preset-select');
+            const pId = parseInt(val, 10);
+            const curP = presetsList.find(x => x.id == pId);
+            if (isNaN(pId) || pId === 0 || pId === activePresetId) {
+                updatePresetButtons();
+                return;
+            }
+
+            if (isScheduleDirty) {
+                const ok = await askConfirm('Discard unsaved changes?',
+                    `Loading "${curP ? curP.name : pId}" replaces the current schedule and discards your unsaved edits.`,
+                    'Load preset', true);
+                if (!ok) {
+                    if (sel) sel.value = activePresetId;
+                    updatePresetButtons();
+                    return;
+                }
+            }
+            updatePresetButtons();
+
+            try {
+                const res = await postForm('/api/presets', `apply=${pId}`);
+                if (res.ok) {
+                    activePresetId = pId;
+                    showToast(`Preset "${curP ? curP.name : pId}" loaded!`);
+                    await fetchSchedules();
+                    refreshStatus();
+                } else {
+                    if (sel) sel.value = activePresetId;
+                    updatePresetButtons();
+                    showToast("Error loading preset!");
+                }
+            } catch (e) {
+                console.error("Error loading preset:", e);
+                if (sel) sel.value = activePresetId;
+                updatePresetButtons();
+                showToast("Communication error!");
+            }
+        }
+
+        async function saveCurrentPreset() {
+            const sel = document.getElementById('preset-select');
+            const pId = parseInt(sel ? sel.value : activePresetId, 10);
+            const p = presetsList.find(x => x.id == pId);
+
+            if (!p || p.builtin) {
+                openNewPresetModal(p ? `${p.name} (Custom)` : 'Custom Schedule');
+                return;
+            }
+            const ok = await askConfirm('Overwrite preset?',
+                `Apply the current schedule to the device and overwrite preset "${p.name}"?`, 'Overwrite');
+            if (!ok) return;
+
+            if (!(await commitSchedules())) {
+                showToast("Could not apply schedule - preset not saved.");
+                return;
+            }
+            try {
+                const res = await postForm('/api/presets', `overwrite=${p.id}`);
+                if (res.ok) {
+                    activePresetId = p.id;
+                    showToast(`Preset "${p.name}" saved!`);
+                    await fetchPresets();
+                    refreshStatus();
+                } else {
+                    showToast("Error saving preset!");
+                }
+            } catch (err) {
+                showToast("Communication error!");
+            }
+        }
+
+        function openNewPresetModal(suggestedName = '') {
+            const input = document.getElementById('new-preset-name');
+            if (input) input.value = suggestedName || '';
+            openModal('save-preset-modal');
+        }
+
+        function closeNewPresetModal() {
+            closeModal('save-preset-modal');
+        }
+
+        async function confirmSaveNewPreset() {
+            const input = document.getElementById('new-preset-name');
+            const name = input ? input.value.trim() : '';
+            if (!name) {
+                showToast("Please enter a name for the preset!");
+                return;
+            }
+            if (!(await commitSchedules())) {
+                showToast("Could not apply schedule - preset not saved.");
+                return;
+            }
+            try {
+                const res = await postForm('/api/presets', `save=1&name=${encodeURIComponent(name)}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data && data.id) activePresetId = data.id;
+                    showToast(`Preset "${name}" saved!`);
+                    closeNewPresetModal();
+                    await fetchPresets();
+                    refreshStatus();
+                } else {
+                    showToast("Error saving preset!");
+                }
+            } catch (err) {
+                showToast("Communication error!");
+            }
+        }
+
+        function selectedUserPreset() {
+            const sel = document.getElementById('preset-select');
+            const pId = parseInt(sel ? sel.value : 0, 10);
+            const p = presetsList.find(x => x.id == pId);
+            return (p && !p.builtin) ? p : null;
+        }
+
+        function openDeletePresetModal() {
+            const p = selectedUserPreset();
+            if (!p) return;
+            setText(document.getElementById('delete-preset-name-lbl'), `"${p.name}"`);
+            openModal('delete-preset-modal');
+        }
+
+        function closeDeletePresetModal() {
+            closeModal('delete-preset-modal');
+        }
+
+        async function confirmDeletePreset() {
+            const p = selectedUserPreset();
+            if (!p) return;
+            try {
+                const res = await postForm('/api/presets', `delete=${p.id}`);
+                if (res.ok) {
+                    showToast(`Preset "${p.name}" deleted!`);
+                    closeDeletePresetModal();
+                    activePresetId = 1;
+                    await fetchPresets();
+                    refreshStatus();
+                } else {
+                    showToast("Error deleting preset!");
+                }
+            } catch (err) {
+                showToast("Communication error!");
+            }
+        }
+
+        function openRenamePresetModal() {
+            const p = selectedUserPreset();
+            if (!p) return;
+            const input = document.getElementById('rename-preset-name');
+            if (input) input.value = p.name;
+            openModal('rename-preset-modal');
+        }
+
+        function closeRenamePresetModal() {
+            closeModal('rename-preset-modal');
+        }
+
+        async function confirmRenamePreset() {
+            const p = selectedUserPreset();
+            if (!p) return;
+            const input = document.getElementById('rename-preset-name');
+            const name = input ? input.value.trim() : '';
+            if (!name) {
+                showToast("Please enter a name for the preset!");
+                return;
+            }
+            try {
+                const res = await postForm('/api/presets', `rename=${p.id}&name=${encodeURIComponent(name)}`);
+                if (res.ok) {
+                    showToast(`Preset renamed to "${name}"!`);
+                    closeRenamePresetModal();
+                    await fetchPresets();
+                } else {
+                    showToast("Error renaming preset!");
+                }
+            } catch (err) {
+                showToast("Communication error!");
+            }
+        }
+
+        async function resetToDefaults() {
+            const ok = await askConfirm('Reset to factory defaults?',
+                'All relay schedules will be reset to the factory defaults.', 'Reset', true);
+            if (!ok) return;
+            try {
+                const res = await postForm('/api/presets', 'reset=1');
+                if (res.ok) {
+                    activePresetId = 1;
+                    showToast("Relay schedules reset to factory defaults!");
+                    await fetchSchedules();
+                    await fetchPresets();
+                    refreshStatus();
+                }
+            } catch (err) {
+                showToast("Communication error!");
+            }
+        }
+
+        // ---- Live status polling ----------------------------------------------
+        let statusInFlight = false;
+        let statusPending = false;
+        let statusFailures = 0;
+
+        // Explicit refresh after a user action: never overlaps, queues one follow-up if busy
+        function refreshStatus() {
+            if (statusInFlight) {
+                statusPending = true;
+                return;
+            }
+            fetchStatus();
+        }
+
+        function renderInputs(data) {
+            const setInput = (id, state, isPower) => {
+                const el = document.getElementById(id);
+                if (!el) return;
+                let html;
+                if (isPower) {
+                    html = state ? '<span class="status-dot dot-green"></span> Mains OK'
+                                 : '<span class="status-dot dot-red"></span> Power lost';
+                } else {
+                    html = state ? '<span class="status-dot dot-green"></span> HIGH'
+                                 : '<span class="status-dot dot-idle"></span> LOW';
+                }
+                if (el.dataset.html !== html) {
+                    el.innerHTML = html;
+                    el.dataset.html = html;
+                }
+                el.title = state ? 'HIGH (3.3V)' : 'LOW (GND)';
+            };
+            setInput('input-gpio0', data.inputs.gpio0, true);
+            setInput('input-gpio4', data.inputs.gpio4, false);
+            setInput('input-gpio2', data.inputs.gpio2, false);
+            setInput('input-gpio15', data.inputs.gpio15, false);
+
+            if (data.names) {
+                if (data.names.inputs) {
+                    setText(document.getElementById('lbl-gpio0'), data.names.inputs[0]);
+                    setText(document.getElementById('lbl-gpio4'), data.names.inputs[1]);
+                    setText(document.getElementById('lbl-gpio2'), data.names.inputs[2]);
+                    setText(document.getElementById('lbl-gpio15'), data.names.inputs[3]);
+                }
+                if (data.names.analog) setText(document.getElementById('lbl-analog'), data.names.analog);
+            }
+        }
+
+        // Builds the relay cards once, then only updates what changed (no flicker, clicks never lost)
+        function renderRelays(relays) {
+            const container = document.getElementById('relays-container');
+            if (container.children.length !== relays.length) {
+                container.innerHTML = '';
+                relays.forEach(r => {
+                    const item = document.createElement('div');
+                    item.className = 'relay-item';
+                    item.dataset.relay = r.num;
+                    item.innerHTML = `
+                        <div class="relay-header">
+                            <div style="display: flex; align-items: center; gap: 8px; min-width: 0;">
+                                <span class="relay-name"></span>
+                                <span class="relay-gpio-tag">GPIO ${gpioOf(r.num)}</span>
+                            </div>
+                            <div class="relay-action-badges">
+                                <button type="button" class="btn-badge" data-act="auto" title="Return to the automatic schedule">AUTO</button>
+                                <button type="button" class="btn-badge" data-act="power"></button>
+                            </div>
+                        </div>
+                        <div class="relay-status-banner"></div>`;
+                    container.appendChild(item);
+                });
+            }
+
+            relays.forEach(relay => {
+                const item = container.querySelector(`.relay-item[data-relay="${relay.num}"]`);
+                if (!item) return;
+                const name = relay.name || relayName(relay.num);
+                setText(item.querySelector('.relay-name'), name);
+
+                const desc = relay.status_desc || (relay.state ? 'Running' : 'Inactive');
+                let bannerClass = 'status-idle';
+                if (relay.override) bannerClass = 'status-manual';
+                else if (relay.state) bannerClass = 'status-active';
+                else if (/pause|feed/i.test(desc)) bannerClass = 'status-paused';
+                const banner = item.querySelector('.relay-status-banner');
+                setClass(banner, 'relay-status-banner ' + bannerClass);
+                setText(banner, (relay.override ? '✋ ' : '') + desc);
+
+                const autoBtn = item.querySelector('[data-act="auto"]');
+                setClass(autoBtn, 'btn-badge btn-badge-auto ' + (relay.override ? 'inactive' : 'active'));
+                autoBtn.setAttribute('aria-pressed', String(!relay.override));
+                autoBtn.setAttribute('aria-label', `${name}: automatic schedule`);
+
+                const powerBtn = item.querySelector('[data-act="power"]');
+                let cls = 'btn-badge btn-badge-power neutral';
+                let label = SVG_POWER;
+                if (relay.override) {
+                    cls = 'btn-badge btn-badge-power ' + (relay.state ? 'forced-on' : 'forced-off');
+                    label = `${SVG_POWER} ${relay.state ? 'ON' : 'OFF'}`;
+                }
+                setClass(powerBtn, cls);
+                if (powerBtn.dataset.label !== label) {
+                    powerBtn.innerHTML = label;
+                    powerBtn.dataset.label = label;
+                }
+                const title = `Force ${relay.state ? 'OFF' : 'ON'} (manual override)`;
+                powerBtn.title = title;
+                powerBtn.setAttribute('aria-label', `${name}: ${title}`);
+                powerBtn.dataset.state = relay.state ? '1' : '0';
+            });
+        }
+
+        document.getElementById('relays-container').addEventListener('click', e => {
+            const btn = e.target.closest('button[data-act]');
+            if (!btn) return;
+            const num = parseInt(btn.closest('.relay-item').dataset.relay, 10);
+            if (btn.dataset.act === 'auto') setRelayAuto(num);
+            else toggleRelayPower(num, btn.dataset.state === '1');
+        });
+
+        function setConnectionBadge(text, ok) {
+            setText(document.getElementById('wifi-status-text'), text);
+            setClass(document.getElementById('wifi-dot'), 'status-dot ' + (ok ? 'dot-green' : 'dot-red'));
+        }
+
+        async function fetchStatus() {
+            if (statusInFlight) return;
+            statusInFlight = true;
+            try {
+                const res = await fetch('/api/status', { signal: withTimeout(5000) });
+                const data = await res.json();
+                statusFailures = 0;
+
+                setText(document.getElementById('mode-val'), data.mode);
+                let timeStr = data.time || '';
+                if (timeStr.indexOf(' ') !== -1) timeStr = timeStr.substring(timeStr.indexOf(' ') + 1);
+                lastTimeStr = timeStr;
+                setText(document.getElementById('time-val'), timeStr);
+                updateTimelineNowCursor(timeStr);
+                setText(document.getElementById('uptime-val'), formatUptime(data.uptime));
+                setText(document.getElementById('ssid-val'), data.wifi_ssid);
+                setText(document.getElementById('rssi-val'), data.wifi_rssi + ' dBm');
+                setText(document.getElementById('ip-val'), data.ip);
+                updateTailscaleIndicator();
+
+                const lightBar = document.getElementById('light-meter-bar');
+                if (lightBar) lightBar.style.width = data.light_percent + '%';
+                setText(document.getElementById('light-percent-label'), data.light_percent + '%');
+
+                // Follow a preset change made elsewhere (other client / device) when there is no local draft
+                if (!isScheduleDirty && data.active_preset && data.active_preset > 0 && data.active_preset !== activePresetId) {
+                    activePresetId = data.active_preset;
+                    fetchPresets();
+                    fetchSchedules();
+                }
+
+                // Event history is refetched only when the device logged something new
+                if (data.history_rev !== undefined && data.history_rev !== lastHistoryRev) {
+                    lastHistoryRev = data.history_rev;
+                    fetchHistory();
+                }
+
+                lastKnownMode = (data.mode && data.mode.includes('Night')) ? 'Night' : 'Day';
+                if (currentTheme === 'auto') applyTheme('auto');
+
+                // Feed mode banner & button
+                isFeedActive = !!data.feed_mode;
+                const btnFeed = document.getElementById('btn-feed-mode');
+                if (btnFeed) {
+                    setClass(btnFeed, 'btn btn-sm ' + (isFeedActive ? 'btn-danger' : 'btn-warning'));
+                    setText(btnFeed, isFeedActive ? '⏹️ Stop Feed' : '🍽️ Feed Mode');
+                }
+                const feedBanner = document.getElementById('feed-banner');
+                feedBanner.classList.toggle('show', isFeedActive);
+                if (isFeedActive) {
+                    const rem = data.feed_remaining || 0;
+                    const m = Math.floor(rem / 60);
+                    const s = rem % 60;
+                    setText(document.getElementById('feed-timer'), `${m}:${s < 10 ? '0' : ''}${s}`);
+                }
+
+                if (data.names) {
+                    const namesChanged = JSON.stringify(data.names) !== JSON.stringify(currentNames);
+                    currentNames = data.names;
+                    if (namesChanged) {
+                        renderTimeline();
+                        updateChannelLabel();
+                    }
+                }
+                renderInputs(data);
+
+                if (data.relays) {
+                    lastRelayStates = data.relays;
+                    data.relays.forEach(relay => updateTimelineDot(relay));
+                    renderRelays(data.relays);
+                }
+
+                setConnectionBadge(data.wifi_status, data.wifi_status === 'Connected');
+            } catch (err) {
+                statusFailures++;
+                if (statusFailures >= 2) setConnectionBadge('Device unreachable', false);
+                console.error("Error fetching status:", err);
+            } finally {
+                statusInFlight = false;
+                if (statusPending) {
+                    statusPending = false;
+                    fetchStatus();
+                }
+            }
+        }
+
+        // ---- Manual relay control ---------------------------------------------
+        async function setRelayAuto(num) {
+            try {
+                const res = await postForm('/api/override', `relay=${num}&override=0`);
+                if (res.ok) {
+                    showToast(`${relayName(num)} returned to Auto schedule`);
+                    refreshStatus();
+                }
+            } catch (err) {
+                showToast("Communication error!");
+            }
+        }
+
+        async function toggleRelayPower(num, currentState) {
+            const targetState = currentState ? 0 : 1;
+            try {
+                const res = await postForm('/api/override', `relay=${num}&override=1&state=${targetState}`);
+                if (res.ok) {
+                    showToast(`${relayName(num)} forced ${targetState ? 'ON' : 'OFF'}`);
+                    refreshStatus();
+                }
+            } catch (err) {
+                showToast("Communication error!");
+            }
+        }
+
+        async function clearOverrides() {
+            try {
+                const res = await postForm('/api/override', 'clear=1');
+                if (res.ok) {
+                    showToast("All peripherals returned to Auto schedule.");
+                    refreshStatus();
+                }
+            } catch (err) {
+                showToast("Communication error!");
+            }
+        }
+
+        // ---- Feed mode --------------------------------------------------------
+        async function toggleFeedMode() {
+            if (isFeedActive) await stopFeedMode();
+            else await startFeedMode();
+        }
+
+        async function startFeedMode() {
+            try {
+                const res = await postForm('/api/feed', 'action=start&duration=600');
+                if (res.ok) {
+                    showToast("Feed Mode started for 10 minutes!");
+                    refreshStatus();
+                }
+            } catch (err) {
+                showToast("Communication error!");
+            }
+        }
+
+        async function stopFeedMode() {
+            try {
+                const res = await postForm('/api/feed', 'action=stop');
+                if (res.ok) {
+                    showToast("Feed Mode cancelled. Resumed schedule.");
+                    refreshStatus();
+                }
+            } catch (err) {
+                showToast("Communication error!");
+            }
+        }
+
+        // ---- I/O names --------------------------------------------------------
+        function openNamesModal() {
+            if (currentNames) {
+                const r = currentNames.relays || [];
+                const inp = currentNames.inputs || [];
+                document.getElementById('name-r1').value = r[0] || '';
+                document.getElementById('name-r2').value = r[1] || '';
+                document.getElementById('name-r3').value = r[2] || '';
+                document.getElementById('name-r4').value = r[3] || '';
+                document.getElementById('name-in0').value = inp[0] || '';
+                document.getElementById('name-in4').value = inp[1] || '';
+                document.getElementById('name-in2').value = inp[2] || '';
+                document.getElementById('name-in15').value = inp[3] || '';
+                document.getElementById('name-a0').value = currentNames.analog || '';
+            }
+            openModal('names-modal');
+        }
+
+        function closeNamesModal() {
+            closeModal('names-modal');
+        }
+
+        async function saveCustomNames() {
+            const body = new URLSearchParams({
+                r1: document.getElementById('name-r1').value.trim(),
+                r2: document.getElementById('name-r2').value.trim(),
+                r3: document.getElementById('name-r3').value.trim(),
+                r4: document.getElementById('name-r4').value.trim(),
+                in0: document.getElementById('name-in0').value.trim(),
+                in4: document.getElementById('name-in4').value.trim(),
+                in2: document.getElementById('name-in2').value.trim(),
+                in15: document.getElementById('name-in15').value.trim(),
+                a0: document.getElementById('name-a0').value.trim()
+            });
+            try {
+                const res = await postForm('/api/names', body.toString());
+                if (res.ok) {
+                    showToast("Peripheral names saved!");
+                    closeNamesModal();
+                    refreshStatus();
+                } else {
+                    showToast("Error saving names!");
+                }
+            } catch (err) {
+                showToast("Communication error!");
+            }
+        }
+
+        // ---- WiFi -------------------------------------------------------------
+        function openWifiModal() {
+            const currentSSID = document.getElementById('ssid-val').innerText;
+            if (currentSSID && currentSSID !== '-') document.getElementById('wifi-ssid').value = currentSSID;
+            openModal('wifi-modal');
+        }
+
+        function closeWifiModal() {
+            closeModal('wifi-modal');
+        }
+
+        async function saveWifiAndClose() {
+            const ssid = document.getElementById('wifi-ssid').value.trim();
+            const pass = document.getElementById('wifi-pass').value;
+            if (!ssid) {
+                showToast("SSID cannot be empty!");
+                return;
+            }
+            try {
+                showToast("Sending WiFi credentials. Reconnecting...");
+                await postForm('/api/wifi', `ssid=${encodeURIComponent(ssid)}&pass=${encodeURIComponent(pass)}`);
+                closeWifiModal();
+            } catch (err) {
+                showToast("Communication error!");
+            }
+        }
+
+        // ---- Init -------------------------------------------------------------
+        applyTheme(currentTheme);
+        fetchStatus();
+        fetchSchedules();
+        fetchPresets();
+
+        // Poll every 2s, but never overlap requests and pause while the tab is hidden
+        setInterval(() => {
+            if (!document.hidden) fetchStatus();
+        }, POLL_MS);
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) refreshStatus();
+        });
+    </script>
+</body>
+</html>

@@ -12,6 +12,7 @@
   - `ESP8266SSDP`: UPnP device broadcasting (*Aquatlantis Smart Aquarium* in Windows Explorer).
   - `ESP8266mDNS`: Bonjour resolution (`http://acvariu.local/`).
 - **UI Architecture:**
-  - Self-hosted single-page HTML5/CSS3 application stored in flash memory (`DASHBOARD_HTML`).
+  - Self-hosted single-page HTML5/CSS3 application: source in `web/index.html`, gzipped by `tools/build_web.py` (PlatformIO pre-script) into `include/dashboard_html_gz.h` (`DASHBOARD_HTML_GZ`, served with `Content-Encoding: gzip`).
+  - Schedule edits are a client-side draft; committed in one batch `POST /api/schedule` (`r1_hours..r4_off`).
   - RESTful polling every 2s via `/api/status`, `/api/schedule`, `/api/presets`, `/api/history`.
   - Variant C Compact Relay Cards: Header contains equipment name, GPIO tag, and dual interactive action badges (`[ AUTO ]` & `[ ⏻ ]`).

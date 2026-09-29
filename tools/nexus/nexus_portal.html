@@ -255,68 +255,49 @@
             box-shadow: 0 6px 20px rgba(14, 165, 233, 0.4);
         }
 
-        .btn-launch.btn-secondary {
-            background: rgba(15, 29, 50, 0.6);
-            border: 1px solid rgba(56, 189, 248, 0.22);
-            color: #cbd5e1;
-            box-shadow: none;
-            font-size: 13px;
-            padding: 10px 16px;
-        }
-
-        .btn-launch.btn-secondary:hover {
-            background: rgba(15, 29, 50, 0.95);
-            border-color: rgba(56, 189, 248, 0.5);
-            color: #ffffff;
-            box-shadow: 0 4px 14px rgba(2, 132, 199, 0.25);
-        }
-
-        /* Sub-Links Grid for Direct Dashboard Navigation */
-        .sub-links-group {
-            display: flex;
-            flex-direction: column;
-            gap: 7px;
+        /* Compact Sub-Links Grid for Direct Dashboard Navigation */
+        .sub-links-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
             margin-top: 10px;
         }
 
-        .sub-link-item {
+        .sub-link-chip {
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            padding: 8px 12px;
-            border-radius: 10px;
-            background: rgba(15, 29, 50, 0.55);
-            border: 1px solid rgba(56, 189, 248, 0.14);
-            color: #e2e8f0;
+            justify-content: center;
+            gap: 5px;
+            padding: 8px 6px;
+            border-radius: 9px;
+            background: rgba(15, 29, 50, 0.7);
+            border: 1px solid rgba(56, 189, 248, 0.2);
+            color: #f1f5f9;
             text-decoration: none;
-            font-size: 12.5px;
+            font-size: 11.5px;
             font-weight: 600;
+            white-space: nowrap;
             transition: all 0.2s ease;
         }
 
-        .sub-link-item:hover {
-            background: rgba(2, 132, 199, 0.22);
-            border-color: rgba(56, 189, 248, 0.45);
+        .sub-link-chip:hover {
+            background: rgba(2, 132, 199, 0.3);
+            border-color: rgba(56, 189, 248, 0.6);
             color: #ffffff;
-            transform: translateX(3px);
-            box-shadow: 0 4px 12px rgba(2, 132, 199, 0.18);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(2, 132, 199, 0.25);
         }
 
-        .sub-link-left {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .sub-link-arrow {
-            color: var(--text-muted);
-            font-size: 13px;
-            transition: all 0.2s ease;
-        }
-
-        .sub-link-item:hover .sub-link-arrow {
+        .chip-arrow {
             color: var(--accent-cyan);
-            transform: translate(2px, -2px);
+            font-size: 10.5px;
+            opacity: 0.8;
+            transition: transform 0.2s;
+        }
+
+        .sub-link-chip:hover .chip-arrow {
+            transform: translate(1px, -1px);
+            opacity: 1;
         }
 
         /* System Bar */
@@ -353,6 +334,7 @@
         @media (max-width: 600px) {
             h1 { font-size: 26px; }
             .cards-grid { grid-template-columns: 1fr; }
+            .sub-links-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -436,32 +418,26 @@
                         </div>
 
                         <!-- 3 Direct Sub-Dashboards -->
-                        <div class="sub-links-group">
-                            <a href="/grafana/d/jchmRiqUfXgTM/battery-health?orgId=1" class="sub-link-item" target="_blank" rel="noopener">
-                                <div class="sub-link-left">
-                                    <span>🔋</span>
-                                    <span>Tesla Battery Health</span>
-                                </div>
-                                <span class="sub-link-arrow">↗</span>
+                        <div class="sub-links-grid">
+                            <a href="/grafana/d/jchmRiqUfXgTM/battery-health?orgId=1" class="sub-link-chip" target="_blank" rel="noopener" title="Tesla Battery Health">
+                                <span>🔋</span>
+                                <span>Battery</span>
+                                <span class="chip-arrow">↗</span>
                             </a>
-                            <a href="/grafana/d/a63cb8c2-987e-47c3-a453-27c9a2eaf01b/room-thermometers-telemetry?orgId=1&refresh=5s" class="sub-link-item" target="_blank" rel="noopener">
-                                <div class="sub-link-left">
-                                    <span>🌡️</span>
-                                    <span>Room Thermometers</span>
-                                </div>
-                                <span class="sub-link-arrow">↗</span>
+                            <a href="/grafana/d/a63cb8c2-987e-47c3-a453-27c9a2eaf01b/room-thermometers-telemetry?orgId=1&refresh=5s" class="sub-link-chip" target="_blank" rel="noopener" title="Room Thermometers Telemetry">
+                                <span>🌡️</span>
+                                <span>Climate</span>
+                                <span class="chip-arrow">↗</span>
                             </a>
-                            <a href="/grafana/d/b6d9526f-2b5e-45d1-bf74-9b385cfbccd3/phone-stats?orgId=1&refresh=5s&from=now-30d&to=now" class="sub-link-item" target="_blank" rel="noopener">
-                                <div class="sub-link-left">
-                                    <span>📱</span>
-                                    <span>Phone & Server Stats</span>
-                                </div>
-                                <span class="sub-link-arrow">↗</span>
+                            <a href="/grafana/d/b6d9526f-2b5e-45d1-bf74-9b385cfbccd3/phone-stats?orgId=1&refresh=5s&from=now-30d&to=now" class="sub-link-chip" target="_blank" rel="noopener" title="Phone & Server Stats">
+                                <span>📱</span>
+                                <span>Server</span>
+                                <span class="chip-arrow">↗</span>
                             </a>
                         </div>
                     </div>
                 </div>
-                <a href="/grafana/" class="btn-launch btn-secondary" id="btn-grafana">
+                <a href="/grafana/" class="btn-launch" id="btn-grafana">
                     <span>Open Full Grafana Hub</span>
                     <span>&rarr;</span>
                 </a>
@@ -494,16 +470,20 @@
         setInterval(updateClock, 1000);
         updateClock();
 
-        // 1. Check Aquarium
+        // 1. Check Aquarium (Hysteresis debounce: requires 1 min continuous failure to show Offline)
+        let aquariumLastSuccess = Date.now();
+        const AQUARIUM_OFFLINE_DELAY_MS = 60000;
+
         async function checkAquarium() {
             const chip = document.getElementById('status-aquarium');
             const txt = chip.querySelector('.status-text');
             const modeMeta = document.getElementById('meta-aquarium-mode');
             const timeMeta = document.getElementById('meta-aquarium-time');
             try {
-                const res = await fetch('/api/status', { signal: AbortSignal.timeout(2000) });
+                const res = await fetch('/api/status', { signal: AbortSignal.timeout(2500) });
                 if (res.ok) {
                     const data = await res.json();
+                    aquariumLastSuccess = Date.now();
                     chip.className = 'status-chip online';
                     txt.innerText = 'Online';
                     if (modeMeta) modeMeta.innerText = `Mode: ${data.mode || 'Day'}`;
@@ -515,8 +495,12 @@
                     return;
                 }
             } catch (e) {}
-            chip.className = 'status-chip offline';
-            txt.innerText = 'Offline';
+
+            // Keep showing Online during brief WiFi drops until 1 full minute of continuous failure
+            if (Date.now() - aquariumLastSuccess >= AQUARIUM_OFFLINE_DELAY_MS) {
+                chip.className = 'status-chip offline';
+                txt.innerText = 'Offline';
+            }
         }
 
         // 2. Check TeslaMate

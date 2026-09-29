@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nexus • Unified Home Portal</title>
+    <title>Galaxy-A6 • Smart Services Portal</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
@@ -255,6 +255,70 @@
             box-shadow: 0 6px 20px rgba(14, 165, 233, 0.4);
         }
 
+        .btn-launch.btn-secondary {
+            background: rgba(15, 29, 50, 0.6);
+            border: 1px solid rgba(56, 189, 248, 0.22);
+            color: #cbd5e1;
+            box-shadow: none;
+            font-size: 13px;
+            padding: 10px 16px;
+        }
+
+        .btn-launch.btn-secondary:hover {
+            background: rgba(15, 29, 50, 0.95);
+            border-color: rgba(56, 189, 248, 0.5);
+            color: #ffffff;
+            box-shadow: 0 4px 14px rgba(2, 132, 199, 0.25);
+        }
+
+        /* Sub-Links Grid for Direct Dashboard Navigation */
+        .sub-links-group {
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+            margin-top: 10px;
+        }
+
+        .sub-link-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 12px;
+            border-radius: 10px;
+            background: rgba(15, 29, 50, 0.55);
+            border: 1px solid rgba(56, 189, 248, 0.14);
+            color: #e2e8f0;
+            text-decoration: none;
+            font-size: 12.5px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .sub-link-item:hover {
+            background: rgba(2, 132, 199, 0.22);
+            border-color: rgba(56, 189, 248, 0.45);
+            color: #ffffff;
+            transform: translateX(3px);
+            box-shadow: 0 4px 12px rgba(2, 132, 199, 0.18);
+        }
+
+        .sub-link-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .sub-link-arrow {
+            color: var(--text-muted);
+            font-size: 13px;
+            transition: all 0.2s ease;
+        }
+
+        .sub-link-item:hover .sub-link-arrow {
+            color: var(--accent-cyan);
+            transform: translate(2px, -2px);
+        }
+
         /* System Bar */
         .system-bar {
             background: rgba(13, 24, 41, 0.5);
@@ -296,7 +360,7 @@
     <div class="portal-wrapper">
         <header>
             <div class="brand-badge">
-                <span>⚡ Nexus Gateway</span>
+                <span>⚡ Galaxy-A6 Gateway</span>
             </div>
             <h1>Smart Services Portal</h1>
             <p class="subtitle">Unified entrypoint for home automation, vehicle analytics, and telemetry monitoring.</p>
@@ -365,15 +429,40 @@
                     </div>
                     <div class="card-info">
                         <div class="card-title">Grafana</div>
-                        <div class="card-desc">Interactive metric dashboards visualizing driving statistics, vampire drain, consumption curves, and charging.</div>
+                        <div class="card-desc">Interactive telemetry dashboards visualizing driving statistics, room temperatures, and server metrics.</div>
                         <div class="card-meta">
                             <span>Port 3000</span> • 
-                            <span id="meta-grafana-status">Dashboards</span>
+                            <span id="meta-grafana-status">3 Dashboards</span>
+                        </div>
+
+                        <!-- 3 Direct Sub-Dashboards -->
+                        <div class="sub-links-group">
+                            <a href="/grafana/d/jchmRiqUfXgTM/battery-health?orgId=1" class="sub-link-item" target="_blank" rel="noopener">
+                                <div class="sub-link-left">
+                                    <span>🔋</span>
+                                    <span>Tesla Battery Health</span>
+                                </div>
+                                <span class="sub-link-arrow">↗</span>
+                            </a>
+                            <a href="/grafana/d/a63cb8c2-987e-47c3-a453-27c9a2eaf01b/room-thermometers-telemetry?orgId=1&refresh=5s" class="sub-link-item" target="_blank" rel="noopener">
+                                <div class="sub-link-left">
+                                    <span>🌡️</span>
+                                    <span>Room Thermometers</span>
+                                </div>
+                                <span class="sub-link-arrow">↗</span>
+                            </a>
+                            <a href="/grafana/d/b6d9526f-2b5e-45d1-bf74-9b385cfbccd3/phone-stats?orgId=1&refresh=5s&from=now-30d&to=now" class="sub-link-item" target="_blank" rel="noopener">
+                                <div class="sub-link-left">
+                                    <span>📱</span>
+                                    <span>Phone & Server Stats</span>
+                                </div>
+                                <span class="sub-link-arrow">↗</span>
+                            </a>
                         </div>
                     </div>
                 </div>
-                <a href="/grafana/" class="btn-launch" id="btn-grafana">
-                    <span>Open Grafana</span>
+                <a href="/grafana/" class="btn-launch btn-secondary" id="btn-grafana">
+                    <span>Open Full Grafana Hub</span>
                     <span>&rarr;</span>
                 </a>
             </div>
@@ -381,7 +470,7 @@
 
         <div class="system-bar">
             <div class="system-pill">
-                <span style="color: var(--accent-cyan);">Node:</span> nexus (192.168.1.28)
+                <span style="color: var(--accent-cyan);">Node:</span> galaxy-a6 (192.168.1.28)
             </div>
             <div class="system-pill">
                 <span style="color: var(--accent-emerald);">Tailscale:</span> 100.83.135.74
@@ -392,7 +481,7 @@
         </div>
 
         <footer>
-            🐠 Aquatlantis &amp; Nexus Gateway • Designed &amp; Implemented by <strong>Bogdan S.</strong>
+            🐠 Aquatlantis &amp; Galaxy-A6 • Designed &amp; Implemented by <strong>Bogdan S.</strong>
         </footer>
     </div>
 

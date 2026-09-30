@@ -15,18 +15,10 @@ void initNetwork() {
     // Set Hostname for the device
     WiFi.hostname("Aquatlantis-Aquarium");
     
-    // Start STA + AP mode so the user can always configure the device locally
-    WiFi.mode(WIFI_AP_STA);
+    // Start strictly in Station (STA) mode to keep the single 2.4GHz radio dedicated to the home router
+    WiFi.mode(WIFI_STA);
+    WiFi.setSleepMode(WIFI_NONE_SLEEP); // Disable RF modem sleep to prevent router GTK rekey disconnects
     WiFi.setAutoReconnect(true);
-    
-    // Start access point with configured credentials
-    bool ap_ok = WiFi.softAP(AP_SSID, AP_PASS);
-    if (ap_ok) {
-        Serial.print("SoftAP Started. IP: ");
-        Serial.println(WiFi.softAPIP());
-    } else {
-        Serial.println("Failed to start SoftAP.");
-    }
     
     // Start station connection
     // If the SSID is not the default placeholder, initialize connection.
@@ -55,6 +47,30 @@ void updateNetwork() {
             Serial.print("[WiFi] Connected successfully. Local IP: ");
             Serial.println(WiFi.localIP());
         }
+    }
+
+    // Emergency Fallback: If not connected to WiFi after 30s from boot, automatically start SoftAP
+    static bool bootFallbackTriggered = false;
+    if (!bootFallbackTriggered && current_status != WL_CONNECTED) {
+        if (millis() > 30000UL) {
+            bootFallbackTriggered = true;
+            Serial.println(F("[WiFi] STA connection not established after 30s. Starting emergency SoftAP 'BioBox-Aquarium'..."));
+            enableSoftAP(true, false);
+        }
+    }
+    
+    // If manual SoftAP was enabled, auto-stop after 10 minutes to protect radio
+    extern bool isManualSoftAPActive();
+    extern unsigned long getManualSoftAPElapsed();
+    if (isManualSoftAPActive() && getManualSoftAPElapsed() >= 600000UL) {
+        Serial.println(F("[WiFi] Manual SoftAP timeout (10m). Shutting down to restore pure STA."));
+        enableSoftAP(false);
+    }
+    
+    // Once STA successfully connects, shut down emergency fallback SoftAP
+    if (current_status == WL_CONNECTED && isSoftAPActive() && !isManualSoftAPActive()) {
+        Serial.println(F("[WiFi] Connected to STA successfully. Shutting down emergency SoftAP to free radio."));
+        enableSoftAP(false);
     }
 
     // Status LED Blinking Logic (Active LOW)
@@ -175,3 +191,50 @@ void setWiFiCredentials(const String& ssid, const String& pass) {
     Serial.printf("[WiFi] Changing credentials. SSID: %s\n", ssid.c_str());
     WiFi.begin(ssid.c_str(), pass.c_str());
 }
+
+static bool softAP_running = false;
+static bool manualSoftAPRequested = false;
+static unsigned long manualSoftAPStartTime = 0;
+
+void enableSoftAP(bool enable, bool manual) {
+    if (enable) {
+        if (manual) {
+            manualSoftAPRequested = true;
+            manualSoftAPStartTime = millis();
+        }
+        if (!softAP_running) {
+            WiFi.mode(WIFI_AP_STA);
+            bool ok = WiFi.softAP(AP_SSID, AP_PASS);
+            softAP_running = ok;
+            Serial.printf("[WiFi] SoftAP '%s' started on IP: %s\n", AP_SSID, WiFi.softAPIP().toString().c_str());
+        }
+    } else {
+        manualSoftAPRequested = false;
+        if (softAP_running || (WiFi.getMode() & WIFI_AP)) {
+            WiFi.softAPdisconnect(true);
+            WiFi.mode(WIFI_STA);
+            softAP_running = false;
+            Serial.println(F("[WiFi] SoftAP stopped. Radio dedicated to Station mode."));
+        }
+    }
+}
+
+bool isSoftAPActive() {
+    return softAP_running || (WiFi.getMode() & WIFI_AP);
+}
+
+bool isManualSoftAPActive() {
+    return manualSoftAPRequested;
+}
+
+unsigned long getManualSoftAPElapsed() {
+    return (manualSoftAPStartTime > 0) ? (millis() - manualSoftAPStartTime) : 0;
+}
+
+void resetWiFiSettings() {
+    Serial.println(F("[WiFi] Resetting WiFi settings. Clearing flash credentials..."));
+    WiFi.disconnect(true); // Erase credentials from SDK flash
+    delay(100);
+    enableSoftAP(true, true);
+}
+

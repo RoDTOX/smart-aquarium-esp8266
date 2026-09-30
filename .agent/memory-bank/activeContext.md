@@ -70,15 +70,19 @@ Unified Multi-Theme Engine Integration (v3.6.0) completed, verified, and flashed
 ## Recent Changes (v3.6.5 - 1-Minute WiFi Outage Confirmation & Transient Log Pruning)
 - **1-Minute WiFi Drop Confirmation Debounce:**
   - Implemented 60-second confirmation window before declaring a WiFi drop or outage, completely eliminating LittleFS `/log.txt` spam from transient 2-second signal dips.
+  - Added `WiFi.setSleepMode(WIFI_NONE_SLEEP)` to eliminate the root cause: router WPA2 GTK rekey (300s / 5min) frame drops due to default modem RF sleep.
   - Brief drops under 1 minute are suppressed from LittleFS event logging (printed only to Serial as transient debug info).
   - Outages exceeding 60 seconds are confirmed as real drops: logged as `[WIFI] Connection Lost (offline > 1 min)`.
   - While confirmed offline, proactive reconnection recovery (`WiFi.reconnect()`) is triggered every 30s to prevent station stack freeze.
   - When connection is restored after a confirmed drop, logs total outage duration: `[WIFI] Connection Restored after X outage`.
 - **Automatic Pruning of Historical 2s WiFi Logs:**
   - Added `cleanTransientWifiLogs()` on LittleFS mount at boot, automatically purging 17 historical 2s/3s WiFi log spam entries from the live device.
-- **Log Management API:**
-  - Extended `/api/history` with `POST clear=1` and `clearSystemLogs()` for manual log reset.
-- **Build & Flash:** Compiled cleanly (`pio run` SUCCESS, Flash: 42.4%, RAM: 49.7%). Flashed via OTA to `192.168.1.32` and verified live.
+- **On-Demand SoftAP & Pure Station Mode:**
+  - Disabled 24/7 background SoftAP `BioBox-Aquarium`. Radio now operates in 100% pure `WIFI_STA` mode during normal operation.
+  - Automatic emergency fallback: starts SoftAP if STA fails to connect within 30s of boot.
+  - Dashboard Wi-Fi modal: added `[ Enable AP ]` button with password prompt, enabling SoftAP with 10-minute auto-timeout.
+  - Hardware emergency trigger: holding GPIO4 LOW for $\ge 5$s forces SoftAP activation.
+- **Build & Flash:** Compiled cleanly (`pio run` SUCCESS, Flash: 42.6%, RAM: 50.2%). Flashed via OTA to `192.168.1.32` and verified live.
 
 ## Immediate Next Steps (Backlog)
 1. P1: Add submersible waterproof digital temperature probe (DS18B20) on GPIO4.

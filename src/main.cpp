@@ -49,6 +49,7 @@ void handleStatus() {
     r += "\"wifi_rssi\":" + String(getWiFiRSSI()) + ",";
     r += "\"wifi_status\":\"" + jsonEscape(getNetworkStatusString()) + "\",";
     r += "\"ip\":\"" + getIPAddress() + "\",";
+    r += "\"ap_active\":" + String(isSoftAPActive() ? "true" : "false") + ",";
     r += "\"uptime\":" + String(millis() / 1000) + ",";
     r += "\"light_percent\":" + String(getLightLevelPercent()) + ",";
     r += "\"active_preset\":" + String(getActivePresetId()) + ",";
@@ -172,8 +173,33 @@ void handleHistory() {
     server.send(200, "application/json", getHistoryJSON());
 }
 
-// REST API endpoint: Saves new WiFi SSID and Password, then reconnects
+// REST API endpoint: Saves new WiFi SSID and Password, enables SoftAP, or resets WiFi
 void handleWiFi() {
+    if (server.hasArg("action")) {
+        String act = server.arg("action");
+        String adminPass = server.arg("admin_pass");
+        if (adminPass != OTA_PASS) {
+            server.send(403, "application/json", "{\"success\":false,\"msg\":\"Invalid admin password\"}");
+            return;
+        }
+        if (act == "enable_ap") {
+            enableSoftAP(true, true);
+            logSystemEvent("Admin action: SoftAP BioBox-Aquarium enabled");
+            server.send(200, "application/json", "{\"success\":true,\"msg\":\"Emergency AP BioBox-Aquarium started\"}");
+            return;
+        } else if (act == "disable_ap") {
+            enableSoftAP(false);
+            logSystemEvent("Admin action: SoftAP BioBox-Aquarium stopped");
+            server.send(200, "application/json", "{\"success\":true,\"msg\":\"SoftAP stopped\"}");
+            return;
+        } else if (act == "reset") {
+            logSystemEvent("Admin action: WiFi credentials erased, AP started");
+            resetWiFiSettings();
+            server.send(200, "application/json", "{\"success\":true,\"msg\":\"WiFi reset. Connect to BioBox-Aquarium\"}");
+            return;
+        }
+    }
+
     if (server.hasArg("ssid") && server.hasArg("pass")) {
         String newSSID = server.arg("ssid");
         String newPass = server.arg("pass");
@@ -629,6 +655,23 @@ void loop() {
                           behaviorStr.c_str());
         }
         Serial.println("-----------------------------------------------------------------");
+    }
+    
+    // 7. Hardware WiFi Reset / Emergency SoftAP Trigger via GPIO4 Long Press (>= 5s LOW)
+    static unsigned long gpio4LowStart = 0;
+    static bool gpio4ResetTriggered = false;
+    if (digitalRead(PIN_INPUT_GPIO4) == LOW) {
+        if (gpio4LowStart == 0) {
+            gpio4LowStart = millis();
+        } else if (!gpio4ResetTriggered && (millis() - gpio4LowStart >= 5000UL)) {
+            gpio4ResetTriggered = true;
+            Serial.println(F("[Hardware] GPIO4 held LOW for 5s! Enabling emergency SoftAP BioBox-Aquarium..."));
+            logSystemEvent("Hardware trigger (GPIO4): Emergency SoftAP enabled");
+            enableSoftAP(true, true);
+        }
+    } else {
+        gpio4LowStart = 0;
+        gpio4ResetTriggered = false;
     }
     
     // Tiny delay to yield to the ESP8266 background processes (prevent watchdog timeouts)

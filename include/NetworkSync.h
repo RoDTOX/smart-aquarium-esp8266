@@ -28,4 +28,9 @@ String getIPAddress();
 // Set new credentials and attempt reconnection
 void setWiFiCredentials(const String& ssid, const String& pass);
 
+// SoftAP On-Demand Control & Emergency Reset
+void enableSoftAP(bool enable, bool manual = false);
+bool isSoftAPActive();
+void resetWiFiSettings();
+
 #endif // NETWORK_SYNC_H

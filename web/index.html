@@ -1344,10 +1344,13 @@
         </div>
         <div class="form-group"><label for="wifi-ssid">Network SSID</label><input type="text" id="wifi-ssid" placeholder="Network Name"></div>
         <div class="form-group"><label for="wifi-pass">Password</label><input type="password" id="wifi-pass" placeholder="••••••••"></div>
-        <p style="font-size:11px;color:var(--muted)">Device will connect to this Wi-Fi. Emergency AP <strong>BioBox-Aquarium</strong> remains available at 192.168.4.1.</p>
-        <div class="modal-actions">
-            <button type="button" class="btn sm" data-act="close-modal" data-target="wifi-modal">Cancel</button>
-            <button type="button" class="btn sm primary" data-act="save-wifi">Connect Device</button>
+        <p style="font-size:11px;color:var(--muted)">Connect to home Wi-Fi. Emergency AP <strong>BioBox-Aquarium</strong> is off by default and starts automatically if Wi-Fi fails on boot.</p>
+        <div class="modal-actions" style="display:flex;justify-content:space-between;align-items:center">
+            <button type="button" class="btn sm danger" data-act="trigger-softap" title="Enable BioBox-Aquarium emergency hotspot">Enable AP</button>
+            <div style="display:flex;gap:6px">
+                <button type="button" class="btn sm" data-act="close-modal" data-target="wifi-modal">Cancel</button>
+                <button type="button" class="btn sm primary" data-act="save-wifi">Connect Device</button>
+            </div>
         </div>
     </div>
 </div>
@@ -2515,6 +2518,21 @@
                 showToast("Sending credentials... Device reconnecting");
                 await postForm('/api/wifi', `ssid=${encodeURIComponent(ssid)}&pass=${encodeURIComponent(pass)}`);
                 closeModal('wifi-modal');
+            } catch (err) { showToast("Communication error"); }
+        }
+        else if (act === 'trigger-softap') {
+            const adminPass = prompt("Enter admin password to start emergency AP:");
+            if (!adminPass) return;
+            try {
+                showToast("Starting emergency SoftAP...");
+                const res = await postForm('/api/wifi', `action=enable_ap&admin_pass=${encodeURIComponent(adminPass)}`);
+                const data = await res.json();
+                if (data.success) {
+                    showToast(data.msg || "Emergency SoftAP started!");
+                    closeModal('wifi-modal');
+                } else {
+                    showToast(data.msg || "Authorization failed");
+                }
             } catch (err) { showToast("Communication error"); }
         }
         else if (act === 'open-save-preset') {

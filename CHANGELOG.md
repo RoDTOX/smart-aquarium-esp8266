@@ -10,10 +10,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   * Prevented LittleFS flash log spam caused by transient 2-second WiFi signal drops on ESP8266.
   * Disconnections under 60 seconds are considered signal glitches and suppressed from LittleFS `/log.txt`.
   * Drops exceeding 60 seconds are confirmed as real outages, logging `[WIFI] Connection Lost (offline > 1 min)`.
-* **Proactive Reconnection Measures:**
+* **Proactive Reconnection & Sleep Mode Fix:**
+  * Added `WiFi.setSleepMode(WIFI_NONE_SLEEP)` to eliminate periodic ~5-minute WPA2 GTK rekey disconnects caused by default modem RF sleep.
   * Enabled `WiFi.setAutoReconnect(true)` in network initialization.
   * While confirmed offline (> 60s), the controller actively invokes `WiFi.reconnect()` every 30s to prevent stack stall.
   * On reconnection after a confirmed outage, logs total duration: `[WIFI] Connection Restored after X outage`.
+* **On-Demand SoftAP & Dedicated Pure Station Mode:**
+  * Eliminated 24/7 background broadcasting of SoftAP `BioBox-Aquarium`. ESP8266 now boots into pure `WIFI_STA` mode, dedicating 100% of the single 2.4GHz radio to the home router.
+  * **Automatic Boot Fallback:** If STA connection fails to establish within 30s of boot, SoftAP starts automatically at 192.168.4.1 for recovery.
+  * **Web Dashboard Control:** Added `[ Enable AP ]` button in Wi-Fi modal with password authorization (`POST /api/wifi action=enable_ap`), auto-stopping after 10 minutes.
+  * **Hardware Long-Press Reset:** Holding GPIO4 LOW for $\ge 5$ seconds forces emergency SoftAP activation.
+  * SoftAP shuts down automatically once connected to STA.
 * **Historical Transient Log Pruning & Clear API:**
   * Added `cleanTransientWifiLogs()` on boot to automatically purge historical 2s/3s WiFi log spam from LittleFS `/log.txt`.
   * Added `POST /api/history` with `clear=1` support for manual log clearing.

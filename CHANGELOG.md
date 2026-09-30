@@ -3,6 +3,21 @@
 All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [3.6.5] - 2026-09-30
+
+### 1-Minute WiFi Outage Confirmation Debounce & Transient Log Pruning
+* **1-Minute WiFi Outage Confirmation Window:**
+  * Prevented LittleFS flash log spam caused by transient 2-second WiFi signal drops on ESP8266.
+  * Disconnections under 60 seconds are considered signal glitches and suppressed from LittleFS `/log.txt`.
+  * Drops exceeding 60 seconds are confirmed as real outages, logging `[WIFI] Connection Lost (offline > 1 min)`.
+* **Proactive Reconnection Measures:**
+  * Enabled `WiFi.setAutoReconnect(true)` in network initialization.
+  * While confirmed offline (> 60s), the controller actively invokes `WiFi.reconnect()` every 30s to prevent stack stall.
+  * On reconnection after a confirmed outage, logs total duration: `[WIFI] Connection Restored after X outage`.
+* **Historical Transient Log Pruning & Clear API:**
+  * Added `cleanTransientWifiLogs()` on boot to automatically purge historical 2s/3s WiFi log spam from LittleFS `/log.txt`.
+  * Added `POST /api/history` with `clear=1` support for manual log clearing.
+
 ## [3.6.4] - 2026-09-29
 
 ### Airstone Bubble Origin, Full Now-Line, Timeline Label Pulse Blips, 24h Labels & Compact Program Editor

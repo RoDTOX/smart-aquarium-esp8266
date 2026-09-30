@@ -162,8 +162,13 @@ void handleScheduleGet() {
     server.send(200, "application/json", getSchedulesJSON());
 }
 
-// REST API endpoint: Returns rolling event log history
+// REST API endpoint: Returns rolling event log history (or clears it if requested via POST)
 void handleHistory() {
+    if (server.method() == HTTP_POST && server.hasArg("clear")) {
+        clearSystemLogs();
+        server.send(200, "application/json", "{\"success\":true,\"msg\":\"Log cleared\"}");
+        return;
+    }
     server.send(200, "application/json", getHistoryJSON());
 }
 
@@ -309,6 +314,7 @@ void setup() {
     server.on("/api/schedule", HTTP_GET, handleScheduleGet);
     server.on("/api/schedule", HTTP_POST, handleScheduleSet);
     server.on("/api/history", HTTP_GET, handleHistory);
+    server.on("/api/history", HTTP_POST, handleHistory);
     server.on("/api/wifi", HTTP_POST, handleWiFi);
     server.on("/api/presets", HTTP_GET, []() {
         server.send(200, "application/json", getPresetsJSON());
@@ -474,21 +480,60 @@ void loop() {
     // Outage Duration Tracking: WiFi drops and Power Loss
     static bool wasInPowerLoss = false;
     static unsigned long powerLossStartMillis = 0;
-    static bool wasWifiConnected = true;
-    static unsigned long wifiDropStartMillis = 0;
     
-    // Check WiFi connection status and measure disconnect duration
+    // WiFi Connection & 1-Minute Outage Debounce
+    static bool initialWifiConnected = false;
+    static bool wasWifiConnected = false;
+    static unsigned long wifiDropStartMillis = 0;
+    static bool wifiOutageConfirmed = false;
+    static unsigned long lastWifiReconnectAttempt = 0;
+    
+    // Check WiFi connection status and measure disconnect duration (1-minute debounce)
     bool isWifiConnected = (WiFi.status() == WL_CONNECTED);
-    if (!isWifiConnected && wasWifiConnected) {
-        wifiDropStartMillis = millis();
-        wasWifiConnected = false;
-        Serial.println(F("[WIFI] Connection lost! Tracking outage duration..."));
-    } else if (isWifiConnected && !wasWifiConnected) {
-        wasWifiConnected = true;
-        if (wifiDropStartMillis > 0) {
-            uint32_t durSec = (millis() - wifiDropStartMillis) / 1000UL;
+    if (!initialWifiConnected) {
+        if (isWifiConnected) {
+            initialWifiConnected = true;
+            wasWifiConnected = true;
+        }
+    } else {
+        if (!isWifiConnected && wasWifiConnected) {
+            // Signal dropped - start timer, wait for 1-minute confirmation before declaring outage
+            wifiDropStartMillis = millis();
+            wasWifiConnected = false;
+            wifiOutageConfirmed = false;
+            lastWifiReconnectAttempt = millis();
+            Serial.println(F("[WIFI] Disconnected! Awaiting 1m confirmation before declaring outage..."));
+        } else if (!isWifiConnected && !wasWifiConnected) {
+            // Still offline - verify if 60 seconds have elapsed
+            if (!wifiOutageConfirmed && (millis() - wifiDropStartMillis >= 60000UL)) {
+                wifiOutageConfirmed = true;
+                logSystemEvent("[WIFI] Connection Lost (offline > 1 min)");
+                Serial.println(F("[WIFI] Real drop confirmed (>60s). Initiating active recovery..."));
+                WiFi.reconnect();
+                lastWifiReconnectAttempt = millis();
+            } else if (wifiOutageConfirmed) {
+                // Recovery measures: retry connection periodically every 30s while confirmed offline
+                if (millis() - lastWifiReconnectAttempt >= 30000UL) {
+                    lastWifiReconnectAttempt = millis();
+                    Serial.println(F("[WIFI] Retrying WiFi.reconnect()..."));
+                    WiFi.reconnect();
+                }
+            }
+        } else if (isWifiConnected && !wasWifiConnected) {
+            // Connection restored!
+            wasWifiConnected = true;
+            if (wifiOutageConfirmed) {
+                // Real outage (lasted >= 1 min)
+                uint32_t durSec = (wifiDropStartMillis > 0) ? ((millis() - wifiDropStartMillis) / 1000UL) : 0;
+                logSystemEvent("[WIFI] Connection Restored after " + formatDuration(durSec) + " outage");
+                Serial.printf("[WIFI] Connection Restored after %s outage\n", formatDuration(durSec).c_str());
+            } else {
+                // Transient signal glitch under 1 minute - do NOT write to LittleFS
+                uint32_t transientSec = (wifiDropStartMillis > 0) ? ((millis() - wifiDropStartMillis) / 1000UL) : 0;
+                Serial.printf("[WIFI] Transient reconnect after %us (< 1m threshold, suppressed from LittleFS log)\n", transientSec);
+            }
             wifiDropStartMillis = 0;
-            logSystemEvent("[WIFI] Connection Restored after " + formatDuration(durSec) + " outage");
+            wifiOutageConfirmed = false;
         }
     }
     

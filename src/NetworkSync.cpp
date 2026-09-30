@@ -17,6 +17,7 @@ void initNetwork() {
     
     // Start STA + AP mode so the user can always configure the device locally
     WiFi.mode(WIFI_AP_STA);
+    WiFi.setAutoReconnect(true);
     
     // Start access point with configured credentials
     bool ap_ok = WiFi.softAP(AP_SSID, AP_PASS);

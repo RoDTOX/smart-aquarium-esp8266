@@ -141,6 +141,57 @@ void logSystemEvent(const String& msg) {
     limitLogSize();
 }
 
+void clearSystemLogs() {
+    if (LittleFS.exists("/log.txt")) {
+        LittleFS.remove("/log.txt");
+    }
+    historyRevision++;
+    logSystemEvent("System log cleared");
+}
+
+void cleanTransientWifiLogs() {
+    if (!LittleFS.exists("/log.txt")) return;
+    File f = LittleFS.open("/log.txt", "r");
+    if (!f) return;
+    
+    std::vector<String> lines;
+    bool modified = false;
+    while (f.available()) {
+        String line = f.readStringUntil('\n');
+        line.trim();
+        if (line.length() == 0) continue;
+        
+        // Discard transient WiFi outage entries (< 60s, e.g. "after 2s outage", "after 3s outage")
+        if (line.indexOf("[WIFI] Connection Restored after ") >= 0) {
+            int idx = line.indexOf("after ");
+            String durPart = line.substring(idx + 6);
+            int outIdx = durPart.indexOf(" outage");
+            if (outIdx > 0) {
+                String durStr = durPart.substring(0, outIdx);
+                durStr.trim();
+                if (durStr.endsWith("s") && durStr.indexOf('m') == -1 && durStr.indexOf('h') == -1) {
+                    modified = true;
+                    continue; // Skip transient blip
+                }
+            }
+        }
+        lines.push_back(line);
+    }
+    f.close();
+    
+    if (modified) {
+        File out = LittleFS.open("/log.txt", "w");
+        if (out) {
+            for (size_t i = 0; i < lines.size(); i++) {
+                out.println(lines[i]);
+            }
+            out.close();
+            Serial.println("[LittleFS Log] Pruned transient (<60s) WiFi outage logs.");
+        }
+        historyRevision++;
+    }
+}
+
 void loadSettingsFromEEPROM() {
     if (LittleFS.exists("/schedules.cfg")) {
         File f = LittleFS.open("/schedules.cfg", "r");
@@ -516,6 +567,7 @@ void initRelays() {
     // Mount LittleFS flash filesystem
     if (LittleFS.begin()) {
         Serial.println("[LittleFS] Mounted successfully.");
+        cleanTransientWifiLogs();
     } else {
         Serial.println("[LittleFS] Error mounting filesystem.");
     }

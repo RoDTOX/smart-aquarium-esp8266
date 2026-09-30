@@ -96,6 +96,8 @@ void updateAllRelayProfiles(const RelayProfile newProfiles[4]);
 
 // Event Logging API
 void logSystemEvent(const String& msg);
+void clearSystemLogs();
+void cleanTransientWifiLogs();
 String getHistoryJSON();
 uint32_t getHistoryRevision();
 String getSchedulesJSON();

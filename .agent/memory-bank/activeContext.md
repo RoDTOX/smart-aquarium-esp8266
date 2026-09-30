@@ -67,6 +67,18 @@ Unified Multi-Theme Engine Integration (v3.6.0) completed, verified, and flashed
   - In Consolă and Clar, pulse run/rest textboxes are completely hidden when continuous mode is active.
   - Preset dropdown width constrained (`max-width: 180px`), allowing dropdown, "Save as...", Rename, and Delete buttons to fit compactly on a single row.
 - **Build & Flash:** Binary compiled cleanly (`pio run` SUCCESS, gzip: 33,974 B $\le 40\text{ KB}$, Flash: 42.2%, RAM: 49.3%). Flashed via OTA to `192.168.1.32` and verified live.
+## Recent Changes (v3.6.5 - 1-Minute WiFi Outage Confirmation & Transient Log Pruning)
+- **1-Minute WiFi Drop Confirmation Debounce:**
+  - Implemented 60-second confirmation window before declaring a WiFi drop or outage, completely eliminating LittleFS `/log.txt` spam from transient 2-second signal dips.
+  - Brief drops under 1 minute are suppressed from LittleFS event logging (printed only to Serial as transient debug info).
+  - Outages exceeding 60 seconds are confirmed as real drops: logged as `[WIFI] Connection Lost (offline > 1 min)`.
+  - While confirmed offline, proactive reconnection recovery (`WiFi.reconnect()`) is triggered every 30s to prevent station stack freeze.
+  - When connection is restored after a confirmed drop, logs total outage duration: `[WIFI] Connection Restored after X outage`.
+- **Automatic Pruning of Historical 2s WiFi Logs:**
+  - Added `cleanTransientWifiLogs()` on LittleFS mount at boot, automatically purging 17 historical 2s/3s WiFi log spam entries from the live device.
+- **Log Management API:**
+  - Extended `/api/history` with `POST clear=1` and `clearSystemLogs()` for manual log reset.
+- **Build & Flash:** Compiled cleanly (`pio run` SUCCESS, Flash: 42.4%, RAM: 49.7%). Flashed via OTA to `192.168.1.32` and verified live.
 
 ## Immediate Next Steps (Backlog)
 1. P1: Add submersible waterproof digital temperature probe (DS18B20) on GPIO4.

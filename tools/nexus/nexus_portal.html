@@ -442,6 +442,40 @@
                     <span>&rarr;</span>
                 </a>
             </div>
+
+            <!-- Card 4: Smart Heating -->
+            <div class="card" id="card-heating">
+                <div style="display: flex; flex-direction: column; gap: 14px;">
+                    <div class="card-top">
+                        <div class="card-icon-box">🔥</div>
+                        <div class="status-chip" id="status-heating">
+                            <span class="status-dot"></span>
+                            <span class="status-text">Checking...</span>
+                        </div>
+                    </div>
+                    <div class="card-info">
+                        <div class="card-title">Smart Heating</div>
+                        <div class="card-desc">Autonomous multi-zone underfloor heating controller with 433.92 MHz boiler radio trigger.</div>
+                        <div class="card-meta">
+                            <span id="meta-heating-boiler">Boiler: --</span> • 
+                            <span id="meta-heating-uptime">Uptime: --</span>
+                        </div>
+
+                        <!-- Climate Sub-link -->
+                        <div class="sub-links-grid">
+                            <a href="/grafana/d/a63cb8c2-987e-47c3-a453-27c9a2eaf01b/room-thermometers-telemetry?orgId=1&refresh=5s" class="sub-link-chip" target="_blank" rel="noopener" title="Room Thermometers Telemetry">
+                                <span>🌡️</span>
+                                <span>Climate Sensors</span>
+                                <span class="chip-arrow">↗</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <a href="/heating/" class="btn-launch" id="btn-heating">
+                    <span>Open Heating Controller</span>
+                    <span>&rarr;</span>
+                </a>
+            </div>
         </div>
 
         <div class="system-bar">
@@ -551,14 +585,49 @@
             txt.innerText = 'Offline';
         }
 
+        // 4. Check Smart Heating (ESP32 controller on 192.168.1.20 via /heating/)
+        let heatingLastSuccess = Date.now();
+        const HEATING_OFFLINE_DELAY_MS = 60000;
+
+        async function checkHeating() {
+            const chip = document.getElementById('status-heating');
+            if (!chip) return;
+            const txt = chip.querySelector('.status-text');
+            const boilerMeta = document.getElementById('meta-heating-boiler');
+            const uptimeMeta = document.getElementById('meta-heating-uptime');
+            try {
+                const res = await fetch('/heating/api/boiler/status', { signal: AbortSignal.timeout(2500) });
+                if (res.ok) {
+                    const data = await res.json();
+                    heatingLastSuccess = Date.now();
+                    chip.className = 'status-chip online';
+                    txt.innerText = 'Online';
+                    if (boilerMeta) boilerMeta.innerText = `Boiler: ${data.boiler === 'ON' ? '🔥 ON' : 'OFF'}`;
+                    if (uptimeMeta) {
+                        const sec = data.uptimeSec || 0;
+                        const mins = Math.floor(sec / 60);
+                        uptimeMeta.innerText = `Up: ${mins}m`;
+                    }
+                    return;
+                }
+            } catch (e) {}
+
+            if (Date.now() - heatingLastSuccess >= HEATING_OFFLINE_DELAY_MS) {
+                chip.className = 'status-chip offline';
+                txt.innerText = 'Offline';
+            }
+        }
+
         checkAquarium();
         checkTeslaMate();
         checkGrafana();
+        checkHeating();
 
         setInterval(() => {
             checkAquarium();
             checkTeslaMate();
             checkGrafana();
+            checkHeating();
         }, 5000);
     </script>
 </body>

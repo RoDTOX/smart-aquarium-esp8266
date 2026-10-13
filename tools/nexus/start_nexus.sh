@@ -7,6 +7,12 @@ su -c '
     iptables -t nat -C OUTPUT -p tcp -d 192.168.1.28 --dport 80 -j REDIRECT --to-ports 8088 2>/dev/null || iptables -t nat -A OUTPUT -p tcp -d 192.168.1.28 --dport 80 -j REDIRECT --to-ports 8088
 '
 
+# Start Local Name Responder (galaxy-a6 and nexus mDNS / LLMNR)
+if ! pgrep -f "nexus_dns_responder.py" >/dev/null; then
+    echo "[Nexus] Starting Local Name Responder (galaxy-a6 and nexus)..."
+    nohup python3 /data/data/com.termux/files/home/nexus_dns_responder.py >/data/data/com.termux/files/home/nexus_dns.log 2>&1 &
+fi
+
 echo "[Nexus] Starting Nginx Portal & Reverse Proxy..."
 while true; do
     proot-distro login debian -- /usr/sbin/nginx -g "daemon off;"

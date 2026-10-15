@@ -3,6 +3,25 @@
 All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [3.6.7] - 2026-10-15
+
+### Manual Override Safety Auto-Fallback (2h) & Consola UI Simplification
+* **Manual Override Safety Auto-Fallback (2h Timeout):**
+  * Added 2-hour safety timer on ESP8266 backend for manual rocker commands (ON or OFF).
+  * Automatically reverts overridden channels back to AUTO schedule after 2 hours (`7,200,000 ms`), safeguarding aquatic life against accidental CO2 poisoning or air pump shutdown.
+  * Added live countdown indicator in channel status (`⚡ Forced Manual (ON) • Auto in Xh Ym`) and exposed `override_remaining` in REST `/api/status`.
+  * Logged safety events to LittleFS `/log.txt`: `Safety: <Name> manual override timed out (2h) -> Reverted to Auto mode`.
+* **Light Sensor Diagnostic & Log Spam Removal:**
+  * Removed Relay 1 lamp defect diagnostic in `src/main.cpp` loop that spammed `Warning: LUMINA is ON, but sensor reads under 15%`.
+  * Disabled Relay 4 ambient room light threshold (`> 50%`) check in `RelayControl.cpp` and `web/index.html`.
+  * Pruned existing `sensor reads under 15%` log entries from LittleFS on startup and filtered them from frontend activity history.
+* **All Themes Cleaned (Consolă, Clar, Acvariu Viu, Clasic, Names Modal):**
+  * **Consolă:** Removed `Light Sensor · A0` sparkline chart panel and `Aux Digital Inputs` panel; added compact Event Log at bottom (`max-height: 130px`).
+  * **Clar:** Removed `Sensors & Network` card containing the light meter and aux inputs; expanded `Devices` to full-width responsive grid; integrated essential power/network stats into `System Information`.
+  * **Acvariu Viu:** Removed the light sensor pill (`<span class="tchip">...light</span>`) from the top of the tank scene.
+  * **Clasic:** Added compact LittleFS Event Log (`<div class="con-log" id="clasic-log">`) at the bottom of the dashboard.
+  * **Names Modal:** Removed inputs for Aux 1..3 and A0 light sensor; now exclusively focuses on the 4 aquarium relays.
+
 ## [3.6.5] - 2026-09-30
 
 ### 1-Minute WiFi Outage Confirmation Debounce & Transient Log Pruning

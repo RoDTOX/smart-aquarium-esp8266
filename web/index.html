@@ -388,8 +388,7 @@
     .clar-chip i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
     .clar-hero-actions { display: flex; flex-direction: column; gap: 8px; }
 
-    .clar-grid-main { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; align-items: start; }
-    .clar-tiles { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    .clar-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
     .clar-tile {
         border: 1px solid var(--border); border-radius: 14px; padding: 14px;
         background: var(--surface-2); display: flex; flex-direction: column; gap: 12px;
@@ -561,13 +560,9 @@
     .con-tabs button[aria-pressed="true"] { color: var(--text); background: var(--surface); box-shadow: inset 0 -2px 0 var(--accent); }
     .con-tabs i { width: 8px; height: 8px; border-radius: 2px; display: inline-block; }
 
-    .con-bottom { display: grid; grid-template-columns: 1fr 1fr 1.3fr; gap: 12px; align-items: start; }
-    .spark { width: 100%; height: 50px; display: block; margin-top: 6px; }
-    .io-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
-    .io-box { border: 1px solid var(--border); border-radius: 7px; padding: 7px 9px; display: flex; align-items: center; gap: 8px; background: var(--surface-2); }
-    .io-box small { color: var(--muted); font-size: 9.5px; text-transform: uppercase; display: block; font-weight: 700; }
-    .con-log { font-family: var(--mono); font-size: 11.5px; max-height: 240px; overflow: auto; background: var(--surface-2); border-radius: 7px; padding: 8px 10px; }
-    .con-log div { display: grid; grid-template-columns: 110px 1fr; gap: 8px; padding: 3px 0; }
+    .con-log { font-family: var(--mono); font-size: 11.5px; max-height: 130px; overflow: auto; background: var(--surface-2); border-radius: 7px; padding: 6px 10px; }
+    .con-log div { display: grid; grid-template-columns: 110px 1fr; gap: 8px; padding: 3px 0; border-bottom: 1px solid var(--border); }
+    .con-log div:last-child { border-bottom: 0; }
     .con-log time { color: var(--faint); }
 
     /* =========================================================================
@@ -1145,24 +1140,14 @@
         </div>
     </div>
 
-    <!-- Bottom Instrumentation: Sensor A0, Inputs, Event Log -->
-    <div class="con-bottom">
-        <section class="con-panel" aria-label="Light Sensor">
-            <div class="con-panel-h"><h2>Light Sensor · A0</h2></div>
-            <div class="con-panel-b" id="con-lux"></div>
-        </section>
-        <section class="con-panel" aria-label="Aux Inputs">
-            <div class="con-panel-h"><h2>Aux Digital Inputs</h2></div>
-            <div class="con-panel-b"><div class="io-grid" id="con-io"></div></div>
-        </section>
-        <section class="con-panel" aria-label="LittleFS Event Log">
-            <div class="con-panel-h">
-                <h2>Event Log</h2>
-                <span class="mono" style="color:var(--muted);font-size:11px">LittleFS · Last 20</span>
-            </div>
-            <div class="con-panel-b"><div class="con-log" id="con-log"></div></div>
-        </section>
-    </div>
+    <!-- Bottom Instrumentation: LittleFS Event Log -->
+    <section class="con-panel" aria-label="LittleFS Event Log">
+        <div class="con-panel-h">
+            <h2>Event Log</h2>
+            <span class="mono" style="color:var(--muted);font-size:11px">LittleFS · Last 20</span>
+        </div>
+        <div class="con-panel-b" style="padding:10px 14px"><div class="con-log" id="con-log"></div></div>
+    </section>
 </div>
 
 <!-- =========================================================================
@@ -1191,21 +1176,14 @@
         <div id="clar-editor"></div>
     </section>
 
-    <!-- Main Grid: 2x2 Device Tiles + Sensors & Network -->
-    <div class="clar-grid-main">
-        <section class="clar-card" aria-label="Devices">
-            <div class="clar-card-h">
-                <h2>Devices</h2>
-                <span class="sub">Auto follows schedule · On / Off manual override</span>
-            </div>
-            <div class="clar-tiles" id="clar-tiles"></div>
-        </section>
-
-        <section class="clar-card" aria-label="Sensors and Network">
-            <div class="clar-card-h"><h2>Sensors & Network</h2></div>
-            <div class="kv" id="clar-sensors"></div>
-        </section>
-    </div>
+    <!-- Devices Section -->
+    <section class="clar-card" aria-label="Devices">
+        <div class="clar-card-h">
+            <h2>Devices</h2>
+            <span class="sub">Auto follows schedule · On / Off manual override</span>
+        </div>
+        <div class="clar-tiles" id="clar-tiles"></div>
+    </section>
 
     <!-- Bottom Grid: Activity History + System Card -->
     <div class="clar-grid-2">
@@ -1235,6 +1213,13 @@
     <div class="clasic-summary" id="clasic-summary"></div>
     <div class="clasic-relays" id="clasic-relays"></div>
     <div class="clasic-preset-bar" id="clasic-preset-bar"></div>
+    <section class="con-panel" aria-label="LittleFS Event Log">
+        <div class="con-panel-h">
+            <h2>Event Log</h2>
+            <span class="mono" style="color:var(--muted);font-size:11px">LittleFS · Last 20</span>
+        </div>
+        <div class="con-panel-b" style="padding:10px 14px"><div class="con-log" id="clasic-log"></div></div>
+    </section>
 </div>
 
 <!-- =========================================================================
@@ -1257,11 +1242,6 @@
         <div class="form-group"><label for="name-r2">Relay 2 (CO2 Solenoid - GPIO 14)</label><input type="text" id="name-r2" maxlength="31"></div>
         <div class="form-group"><label for="name-r3">Relay 3 (Air Pump - GPIO 12)</label><input type="text" id="name-r3" maxlength="31"></div>
         <div class="form-group"><label for="name-r4">Relay 4 (Ambient LED - GPIO 13)</label><input type="text" id="name-r4" maxlength="31"></div>
-        <div class="form-group"><label for="name-in0">Mains Sensor (GPIO 0)</label><input type="text" id="name-in0" maxlength="31"></div>
-        <div class="form-group"><label for="name-in4">Aux Input 1 (GPIO 4)</label><input type="text" id="name-in4" maxlength="31"></div>
-        <div class="form-group"><label for="name-in2">Aux Input 2 (GPIO 2)</label><input type="text" id="name-in2" maxlength="31"></div>
-        <div class="form-group"><label for="name-in15">Aux Input 3 (GPIO 15)</label><input type="text" id="name-in15" maxlength="31"></div>
-        <div class="form-group"><label for="name-a0">Light Sensor (A0)</label><input type="text" id="name-a0" maxlength="31"></div>
         <div class="modal-actions">
             <button type="button" class="btn sm" data-act="close-modal" data-target="names-modal">Cancel</button>
             <button type="button" class="btn sm primary" data-act="save-names">Save Names</button>
@@ -1509,9 +1489,6 @@
         if (isHourActive(idx, h)) {
             const nextOff = nextChangeHour(idx, true);
             const until = nextOff >= 0 ? `until ${pad(nextOff)}:00` : '24/7';
-            if (num === 4 && !r.state && state.lightPct > 50) {
-                return { on: false, source: 'saving', label: 'Skipped • bright room', detail: desc || `Light sensor ${state.lightPct}% > 50%`, next: until };
-            }
             if (sv.behavior === 1) {
                 return { on: !!r.state, source: r.state ? 'pulse-on' : 'pulse-off', label: r.state ? 'Pulse running' : 'Pulse pause', detail: desc || (r.state ? 'Pulsing active' : 'Pulse resting'), next: until };
             }
@@ -1721,14 +1698,16 @@
             if (!res.ok) return;
             const data = await res.json();
             if (Array.isArray(data)) {
-                state.history = data.slice().reverse().map(item => {
-                    const msg = item.msg || '';
-                    let type = '';
-                    if (/restored/i.test(msg)) type = 'ok';
-                    else if (msg.includes('[PWR]') || msg.includes('Power Outage')) type = 'alert';
-                    else if (/forced|manual|override/i.test(msg)) type = 'manual';
-                    return { time: item.time || '', msg: msg, type: type };
-                });
+                state.history = data.slice().reverse()
+                    .filter(item => !/sensor reads under 15%/i.test(item.msg || ''))
+                    .map(item => {
+                        const msg = item.msg || '';
+                        let type = '';
+                        if (/restored/i.test(msg)) type = 'ok';
+                        else if (msg.includes('[PWR]') || msg.includes('Power Outage')) type = 'alert';
+                        else if (/forced|manual|override|safety/i.test(msg)) type = 'manual';
+                        return { time: item.time || '', msg: msg, type: type };
+                    });
                 emit();
             }
         } catch (e) {
@@ -1913,16 +1892,6 @@
             </article>`;
         }).join(''));
 
-        // Sensors
-        patch('clar-sensors', `
-            <div class="kv-row"><span>${icon('bolt', 16)}Mains power</span><b style="color:${state.power ? 'var(--ok)' : 'var(--danger)'}">${state.power ? 'OK (230V)' : 'Lost · On Battery'}</b></div>
-            <div class="kv-row" style="flex-direction:column;align-items:stretch">
-                <div style="display:flex;justify-content:space-between"><span style="color:var(--muted);display:flex;gap:8px;align-items:center">${icon('sensor', 16)}Light sensor (A0)</span><b class="num">${state.lightPct}%</b></div>
-                <div class="meter"><div style="width:${state.lightPct}%"></div></div>
-            </div>
-            <div class="kv-row"><span>${icon('wifi', 16)}Wi-Fi Connection</span><b class="num">${state.wifi ? `${esc(state.ssid)} (${state.rssi} dBm)` : 'Disconnected'}</b></div>
-            <div class="kv-row"><span>${icon('gear', 16)}Aux Inputs</span><b class="num">GPIO4: ${state.inputs.aux4 ? 'HI' : 'LO'} · GPIO2: ${state.inputs.aux2 ? 'HI' : 'LO'} · GPIO15: ${state.inputs.aux15 ? 'HI' : 'LO'}</b></div>`);
-
         // Heatmap Matrix
         const hourPct = ((state.timeSec || 0) / 86400) * 100;
         let sch = `<div></div><div class="clar-hours">${Array.from({ length: 24 }, (_, h) => `<span>${pad(h)}</span>`).join('')}</div>`;
@@ -1989,9 +1958,11 @@
 
         // System
         patch('clar-system', `
+            <div class="kv-row"><span>${icon('bolt', 16)}Mains power</span><b style="color:${state.power ? 'var(--ok)' : 'var(--danger)'}">${state.power ? 'OK (230V)' : 'Lost · On Battery'}</b></div>
+            <div class="kv-row"><span>${icon('wifi', 16)}Wi-Fi Connection</span><b class="num">${state.wifi ? `${esc(state.ssid)} (${state.rssi} dBm)` : 'Disconnected'}</b></div>
+            <div class="kv-row"><span>${icon('clock', 16)}Clock Status</span><b class="num">${state.timeSec != null ? 'NTP Synced' : 'Not Synced'} · ${fmtClock(state.timeSec)}</b></div>
             <div class="kv-row"><span>Uptime</span><b class="num">${fmtUptime(uptimeSec())}</b></div>
-            <div class="kv-row"><span>IP Address</span><b class="num">${state.ip}</b></div>
-            <div class="kv-row"><span>Clock Status</span><b class="num">${state.timeSec != null ? 'NTP Synced' : 'Not Synced'} · ${fmtClock(state.timeSec)}</b></div>`);
+            <div class="kv-row"><span>IP Address</span><b class="num">${state.ip}</b></div>`);
     }
 
     /* ---- RENDERING: LAYOUT 2 - CONSOLĂ ---- */
@@ -2122,27 +2093,8 @@
             </div>
             <p class="mono" style="margin-top:10px;color:var(--muted);font-size:11.5px">${hoursOn} h/day active${curD.behavior ? ` · duty ${Math.round(curD.on / (curD.on + curD.off) * 100)}%` : ''}</p>`);
 
-        // Bottom Sensors & Log
-        const pts = state.lightTrend.map((v, i) => `${(i / (Math.max(1, state.lightTrend.length - 1)) * 300).toFixed(1)},${(50 - v / 100 * 46).toFixed(1)}`).join(' ');
-        patch('con-lux', `
-            <div style="display:flex;justify-content:space-between;align-items:baseline">
-                <div><span class="mono" style="font-size:26px;font-weight:700">${state.lightPct}</span><span style="color:var(--muted);font-size:12px;margin-left:3px">%</span></div>
-                <span class="mono" style="color:var(--muted);font-size:11px">24H TELEMETRY</span>
-            </div>
-            <svg class="spark" viewBox="0 0 300 50" preserveAspectRatio="none" aria-hidden="true">
-                <line x1="0" y1="${50 - 50 / 100 * 46}" x2="300" y2="${50 - 50 / 100 * 46}" stroke="var(--faint)" stroke-dasharray="3 4"/>
-                <polyline points="${pts || '0,50 300,50'}" fill="none" stroke="var(--accent)" stroke-width="2" vector-effect="non-scaling-stroke"/>
-            </svg>
-            <p class="mono" style="color:var(--muted);font-size:11px;margin-top:4px">--- 50% threshold for ambient LED eco mode</p>`);
-
-        const io = [
-            ['GPIO 0 · Mains', state.power, state.power ? 'MAINS OK' : 'LOST', state.power ? 'ok' : 'bad'],
-            ['GPIO 4 · Aux 1', state.inputs.aux4, state.inputs.aux4 ? 'HIGH' : 'LOW', state.inputs.aux4 ? 'ok' : ''],
-            ['GPIO 2 · Aux 2', state.inputs.aux2, state.inputs.aux2 ? 'HIGH' : 'LOW', state.inputs.aux2 ? 'ok' : ''],
-            ['GPIO 15 · Aux 3', state.inputs.aux15, state.inputs.aux15 ? 'HIGH' : 'LOW', state.inputs.aux15 ? 'ok' : '']
-        ];
-        patch('con-io', io.map(([k, , v, c]) => `<div class="io-box"><span class="led ${c}"></span><span><small>${k}</small><b>${v}</b></span></div>`).join(''));
-        patch('con-log', state.history.slice(0, 15).map(h => `<div><time>${esc(h.time)}</time><span class="${h.type}">${esc(h.msg)}</span></div>`).join('') || '<p style="color:var(--muted)">No log entries.</p>');
+        // Bottom Event Log
+        patch('con-log', state.history.slice(0, 20).map(h => `<div><time>${esc(h.time)}</time><span class="${h.type}">${esc(h.msg)}</span></div>`).join('') || '<p style="color:var(--muted)">No log entries.</p>');
     }
 
     /* ---- RENDERING: LAYOUT 3 - ACVARIU VIU ---- */
@@ -2158,8 +2110,7 @@
         }
 
         patch('viu-tank-top', `
-            <span class="tchip big num">${icon(isDaytime() ? 'sun' : 'moon', 18)}${fmtHM(state.timeSec)} <small>${esc(modeLabel())}</small></span>
-            <span class="tchip">${icon('sensor', 14)}<span class="num">${state.lightPct}%</span> <small>light</small></span>`);
+            <span class="tchip big num">${icon(isDaytime() ? 'sun' : 'moon', 18)}${fmtHM(state.timeSec)} <small>${esc(modeLabel())}</small></span>`);
 
         let alert = '';
         if (!state.power) alert = `<div class="tank-alert" role="alert">${icon('bolt', 16)}Power outage · on battery failsafe</div>`;
@@ -2352,6 +2303,8 @@
             <div style="font-size:12px;color:var(--muted);font-family:var(--mono)">
                 ${isDirty() ? '⚠️ Unsaved schedule changes' : 'All channels in sync with device'}
             </div>`);
+
+        patch('clasic-log', state.history.slice(0, 20).map(h => `<div><time>${esc(h.time)}</time><span class="${h.type}">${esc(h.msg)}</span></div>`).join('') || '<p style="color:var(--muted)">No log entries.</p>');
     }
 
     /* ---- DRAFT BAR RENDER ---- */
@@ -2476,12 +2429,6 @@
         else if (act === 'open-names') {
             if (rawNames && rawNames.relays) {
                 for (let i = 0; i < 4; i++) document.getElementById(`name-r${i + 1}`).value = rawNames.relays[i] || '';
-                const inp = rawNames.inputs || [];
-                document.getElementById('name-in0').value = inp[0] || '';
-                document.getElementById('name-in4').value = inp[1] || '';
-                document.getElementById('name-in2').value = inp[2] || '';
-                document.getElementById('name-in15').value = inp[3] || '';
-                document.getElementById('name-a0').value = rawNames.analog || '';
             }
             openModal('names-modal');
         }
@@ -2490,17 +2437,12 @@
                 r1: document.getElementById('name-r1').value.trim(),
                 r2: document.getElementById('name-r2').value.trim(),
                 r3: document.getElementById('name-r3').value.trim(),
-                r4: document.getElementById('name-r4').value.trim(),
-                in0: document.getElementById('name-in0').value.trim(),
-                in4: document.getElementById('name-in4').value.trim(),
-                in2: document.getElementById('name-in2').value.trim(),
-                in15: document.getElementById('name-in15').value.trim(),
-                a0: document.getElementById('name-a0').value.trim()
+                r4: document.getElementById('name-r4').value.trim()
             });
             try {
                 const res = await postForm('/api/names', body.toString());
                 if (res.ok) {
-                    showToast("Peripheral names saved!");
+                    showToast("Channel names saved!");
                     closeModal('names-modal');
                     fetchStatus();
                 } else showToast("Error saving names");

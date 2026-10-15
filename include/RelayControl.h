@@ -51,6 +51,7 @@ void initRelays();
 // Fetch status of a relay (1-indexed: 1 to 4)
 RelayState getRelayState(int relayNum);
 String getRelayStatusDescription(int relayNum);
+uint32_t getManualOverrideRemainingSec(int relayNum);
 
 // Set manual override for a specific relay
 void setRelayManualOverride(int relayNum, bool overrideActive, bool targetState = false);

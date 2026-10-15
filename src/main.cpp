@@ -65,6 +65,7 @@ void handleStatus() {
         r += "\"state\":" + String(s.physicalState ? "true" : "false") + ",";
         r += "\"override\":" + String(s.manualOverride ? "true" : "false") + ",";
         r += "\"override_state\":" + String(s.manualState ? "true" : "false") + ",";
+        r += "\"override_remaining\":" + String(getManualOverrideRemainingSec(i)) + ",";
         r += "\"in_pause\":" + String(isRelayInPulsePause(i) ? "true" : "false") + ",";
         r += "\"status_desc\":\"" + jsonEscape(getRelayStatusDescription(i)) + "\"";
         r += "}";
@@ -599,29 +600,7 @@ void loop() {
     // 3. Command relays based on calculated system state & scheduling profiles
     updateRelays(currentSystemMode);
 
-    // 4. Smart Diagnostic: Detect Main Light (Relay 1) physical failure
-    static bool lampDefectLogged = false;
-    static unsigned long lampTurnedOnTime = 0;
-    RelayState relay1State = getRelayState(1);
-    
-    if (relay1State.physicalState) {
-        if (lampTurnedOnTime == 0) {
-            lampTurnedOnTime = millis();
-        }
-        // If light has been ON for more than 30 seconds, check the sensor
-        if (millis() - lampTurnedOnTime >= 30000) {
-            int lightLvl = getLightLevelPercent();
-            if (lightLvl < 15 && !lampDefectLogged) {
-                logSystemEvent("Warning: " + getRelayCustomName(1) + " is ON, but sensor reads under 15%");
-                lampDefectLogged = true;
-            }
-        }
-    } else {
-        lampTurnedOnTime = 0;
-        lampDefectLogged = false;
-    }
-    
-    // 5. Web requests handler
+    // 4. Web requests handler
     server.handleClient();
     
     // 6. Periodic serial logger (every 5 seconds) to aid deployment diagnostics

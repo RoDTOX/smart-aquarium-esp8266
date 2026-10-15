@@ -16,6 +16,10 @@ static RelayState relays[4] = {
     {false, false, false}
 };
 
+// Safety timeout for manual overrides (2 hours = 7,200,000 ms)
+static const unsigned long MANUAL_OVERRIDE_TIMEOUT_MS = 2UL * 60UL * 60UL * 1000UL;
+static unsigned long manualOverrideStartTime[4] = {0, 0, 0, 0};
+
 // Persistent profiles loaded/saved in EEPROM
 static RelayProfile profiles[4];
 
@@ -174,6 +178,12 @@ void cleanTransientWifiLogs() {
                     continue; // Skip transient blip
                 }
             }
+        }
+        
+        // Discard legacy light sensor warnings if present (no light sensor installed)
+        if (line.indexOf("sensor reads under 15%") >= 0 || line.indexOf("is ON, but sensor reads") >= 0) {
+            modified = true;
+            continue;
         }
         lines.push_back(line);
     }
@@ -593,7 +603,10 @@ String getRelayStatusDescription(int relayNum) {
     
     // 1. Manual Override takes precedence
     if (s.manualOverride) {
-        return s.manualState ? "⚡ Forced Manual (ON)" : "⚡ Forced Manual (OFF)";
+        uint32_t rem = getManualOverrideRemainingSec(relayNum);
+        uint32_t m = (rem + 59) / 60;
+        String remStr = (m >= 60) ? (String(m / 60) + "h " + String(m % 60) + "m") : (String(m) + "m");
+        return String(s.manualState ? "⚡ Forced Manual (ON)" : "⚡ Forced Manual (OFF)") + " • Auto in " + remStr;
     }
     
     // 2. Power loss mode
@@ -691,16 +704,23 @@ RelayProfile getRelayProfile(int relayNum) {
 void setRelayManualOverride(int relayNum, bool overrideActive, bool targetState) {
     if (relayNum < 1 || relayNum > 4) return;
     
-    bool oldOverride = relays[relayNum - 1].manualOverride;
-    bool oldState = relays[relayNum - 1].manualState;
+    int idx = relayNum - 1;
+    bool oldOverride = relays[idx].manualOverride;
+    bool oldState = relays[idx].manualState;
     
-    relays[relayNum - 1].manualOverride = overrideActive;
-    relays[relayNum - 1].manualState = targetState;
+    relays[idx].manualOverride = overrideActive;
+    relays[idx].manualState = targetState;
+    
+    if (overrideActive) {
+        manualOverrideStartTime[idx] = millis();
+    } else {
+        manualOverrideStartTime[idx] = 0;
+    }
     
     String rName = getRelayCustomName(relayNum);
     if (overrideActive) {
         if (!oldOverride || oldState != targetState) {
-            logSystemEvent("Manual command: " + rName + " -> " + (targetState ? "ON" : "OFF"));
+            logSystemEvent("Manual command: " + rName + " -> " + (targetState ? "ON" : "OFF") + " (Auto in 2h)");
         }
     } else {
         if (oldOverride) {
@@ -714,12 +734,22 @@ void clearManualOverrides() {
     for (int i = 0; i < 4; i++) {
         if (relays[i].manualOverride) {
             relays[i].manualOverride = false;
+            manualOverrideStartTime[i] = 0;
             anyChanged = true;
         }
     }
     if (anyChanged) {
         logSystemEvent("All peripherals reverted to Auto mode");
     }
+}
+
+uint32_t getManualOverrideRemainingSec(int relayNum) {
+    if (relayNum < 1 || relayNum > 4) return 0;
+    int idx = relayNum - 1;
+    if (!relays[idx].manualOverride) return 0;
+    unsigned long elapsed = millis() - manualOverrideStartTime[idx];
+    if (elapsed >= MANUAL_OVERRIDE_TIMEOUT_MS) return 0;
+    return (MANUAL_OVERRIDE_TIMEOUT_MS - elapsed) / 1000UL;
 }
 
 void updateRelayProfile(int relayNum, uint32_t activeHours, uint8_t behavior, uint32_t pulseOnSec, uint32_t pulseOffSec) {
@@ -837,6 +867,16 @@ String getModeString(SystemMode mode) {
 void updateRelays(SystemMode currentMode) {
     unsigned long now = millis();
     
+    // Safety Auto-Fallback: If a relay has been in manual override for >= 2 hours,
+    // automatically revert it back to AUTO to protect aquarium ecosystem (CO2 poisoning, air pump asphyxiation, etc.)
+    for (int i = 0; i < 4; i++) {
+        if (relays[i].manualOverride && (now - manualOverrideStartTime[i] >= MANUAL_OVERRIDE_TIMEOUT_MS)) {
+            relays[i].manualOverride = false;
+            manualOverrideStartTime[i] = 0;
+            logSystemEvent("Safety: " + getRelayCustomName(i + 1) + " manual override timed out (2h) -> Reverted to Auto mode");
+        }
+    }
+    
     // 1. Calculate target automatic states
     bool targets[4] = {false, false, false, false};
     
@@ -895,12 +935,12 @@ void updateRelays(SystemMode currentMode) {
         }
     }
     
-    // Ambient Lighting (Relay 4) Energy Saving:
-    // If ambient light is scheduled to be ON, but natural room light is already bright (e.g. > 50%),
-    // turn it OFF to save energy.
+    // Ambient Lighting (Relay 4) Energy Saving disabled (no light sensor installed):
+    /*
     if (targets[3] && getLightLevelPercent() > 50) {
         targets[3] = false;
     }
+    */
 
     // Smart Feeding Mode: If active, force Air Pump (Relay 3) OFF so food doesn't disperse
     if (isFeedModeActive()) {
